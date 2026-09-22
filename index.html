@@ -187,8 +187,8 @@
 
     .invitation strong {
       display: block;
-      margin-bottom: 8px;
-      font-size: 17px;
+      font-size: 16px;
+      margin-bottom: 6px;
     }
 
     .invitation span {
@@ -202,10 +202,9 @@
       margin-top: 15px;
     }
 
-    .accept,
-    .reject {
-      width: auto;
+    .invitation-buttons button {
       margin: 0;
+      width: auto;
       padding: 10px 15px;
     }
 
@@ -217,6 +216,7 @@
     .reject {
       background: #222;
       color: white;
+      border: 1px solid #444;
     }
 
     footer {
@@ -245,8 +245,7 @@
         flex-direction: column;
       }
 
-      .accept,
-      .reject {
+      .invitation-buttons button {
         width: 100%;
       }
     }
@@ -386,6 +385,7 @@
   SQUADLY · Battlefield 6 matchmaking prototype
 </footer>
 
+
 <script>
 
 const SUPABASE_URL =
@@ -451,7 +451,6 @@ async function saveProfile() {
     "Profile saved. Finding your squad...";
 
   await findMatches(profile);
-
   await loadInvites(username);
 }
 
@@ -523,9 +522,14 @@ async function findMatches(myProfile) {
 
       });
 
+      const maxScore = 110;
+
+      const normalizedScore =
+        Math.round((score / maxScore) * 100);
+
       return {
         ...player,
-        score
+        score: normalizedScore
       };
 
     });
@@ -685,10 +689,12 @@ async function loadInvites(username) {
   if (!data || data.length === 0) {
 
     section.style.display = "none";
+
     return;
   }
 
   section.style.display = "block";
+
   container.innerHTML = "";
 
   data.forEach(invite => {
