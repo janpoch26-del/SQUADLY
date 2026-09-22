@@ -215,6 +215,7 @@
 
   <section class="hero">
     <h1>Find your squad.<br>Keep your squad.</h1>
+
     <div class="subtitle">
       Find Battlefield 6 players who actually fit your playstyle.
     </div>
@@ -525,15 +526,43 @@
   }
 
 
- function invitePlayer(username) {
-  const status = document.getElementById("status");
+  async function invitePlayer(username) {
 
-  status.textContent = "Sending invite to " + username + "...";
+    const senderUsername =
+      document.getElementById("username").value.trim();
 
-  setTimeout(() => {
-    status.textContent = "Invite sent to " + username + "!";
-  }, 800);
-}
+    const status =
+      document.getElementById("status");
+
+    if (!senderUsername) {
+      status.textContent =
+        "Create your profile first.";
+      return;
+    }
+
+    status.textContent =
+      "Sending invite to " + username + "...";
+
+    const { error } = await db
+      .from("invites")
+      .insert({
+        sender_username: senderUsername,
+        receiver_username: username,
+        status: "pending"
+      });
+
+    if (error) {
+      console.error(error);
+
+      status.textContent =
+        "Could not send invite: " + error.message;
+
+      return;
+    }
+
+    status.textContent =
+      "Invite sent to " + username + "!";
+  }
 
 
   function escapeHtml(text) {
