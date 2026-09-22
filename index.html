@@ -518,15 +518,18 @@
           const reasons = [];
 
 
-          if (
-            player.platform ===
-            myProfile.platform
-          ) {
+          /*
+            MATCH SCORE — TOTAL 100 POINTS
 
-            score += 20;
+            Playstyle: 30
+            Session:   25
+            Region:    20
+            Platform:  15
+            Mic:       10
 
-            reasons.push("Same platform");
-          }
+            Traits are shown as reasons,
+            but do not affect the percentage.
+          */
 
 
           if (
@@ -536,18 +539,9 @@
 
             score += 30;
 
-            reasons.push("Same playstyle");
-          }
-
-
-          if (
-            player.region ===
-            myProfile.region
-          ) {
-
-            score += 25;
-
-            reasons.push("Same region");
+            reasons.push(
+              "Mateix estil de joc"
+            );
           }
 
 
@@ -558,7 +552,35 @@
 
             score += 25;
 
-            reasons.push("Same session");
+            reasons.push(
+              "Mateixa sessió"
+            );
+          }
+
+
+          if (
+            player.region ===
+            myProfile.region
+          ) {
+
+            score += 20;
+
+            reasons.push(
+              "Mateixa regió"
+            );
+          }
+
+
+          if (
+            player.platform ===
+            myProfile.platform
+          ) {
+
+            score += 15;
+
+            reasons.push(
+              "Mateixa plataforma"
+            );
           }
 
 
@@ -569,7 +591,9 @@
 
             score += 10;
 
-            reasons.push("Same voice chat preference");
+            reasons.push(
+              "Mateixa preferència de xat de veu"
+            );
           }
 
 
@@ -587,28 +611,17 @@
             );
 
 
-          score +=
-            sharedTraits.length * 5;
-
-
           sharedTraits.forEach(trait => {
 
             reasons.push(
-              "Both value " + trait
+              "Tots dos valoreu " + trait
             );
 
           });
 
 
-          const maxScore = 130;
-
           const percentage =
-            Math.min(
-              100,
-              Math.round(
-                (score / maxScore) * 100
-              )
-            );
+            score;
 
 
           return {
@@ -657,7 +670,7 @@
         const reasonsText =
           player.reasons.length > 0
             ? player.reasons.join(" · ")
-            : "No major profile similarities yet";
+            : "No hi ha coincidències importants encara";
 
 
         div.innerHTML = `
@@ -690,7 +703,7 @@
 
 
           <div class="match-reasons">
-            <strong>Why you match:</strong>
+            <strong>Per què coincidiu:</strong>
             ${escapeHtml(reasonsText)}
           </div>
 
