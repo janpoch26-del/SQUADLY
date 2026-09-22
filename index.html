@@ -1,12 +1,10 @@
-```html
 <!DOCTYPE html>
-<html lang="ca">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SQUADLY — Find your squad</title>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <title>SQUADLY — Find your squad</title>
 
   <style>
     * {
@@ -16,1152 +14,1173 @@
     body {
       margin: 0;
       font-family: Arial, Helvetica, sans-serif;
-      background: #0a0a0a;
-      color: #f5f5f5;
+      background: #0b0f14;
+      color: #f2f2f2;
     }
 
     .container {
-      width: min(1050px, 92%);
-      margin: auto;
+      width: min(900px, 92%);
+      margin: 0 auto;
     }
 
     header {
-      padding: 28px 0;
-      border-bottom: 1px solid #222;
-    }
-
-    .logo {
-      font-size: 26px;
-      font-weight: 900;
-      letter-spacing: 2px;
-    }
-
-    .beta {
-      color: #999;
-      font-size: 11px;
-      margin-left: 10px;
-      border: 1px solid #333;
-      padding: 5px 8px;
-      border-radius: 5px;
-    }
-
-    .hero {
-      padding: 70px 0 45px;
+      padding: 50px 0 30px;
       text-align: center;
     }
 
-    h1 {
-      font-size: clamp(42px, 8vw, 82px);
+    header h1 {
       margin: 0;
-      line-height: .95;
-      letter-spacing: -4px;
+      font-size: 48px;
+      letter-spacing: 4px;
     }
 
-    .subtitle {
-      color: #999;
-      font-size: 18px;
-      margin-top: 22px;
+    header p {
+      color: #9ca3af;
+      margin-top: 10px;
     }
 
     .card {
-      background: #111;
-      border: 1px solid #242424;
+      background: #111827;
+      border: 1px solid #1f2937;
       border-radius: 14px;
-      padding: 25px;
-      margin-bottom: 25px;
+      padding: 24px;
+      margin-bottom: 20px;
     }
 
-    h2 {
+    .card h2 {
       margin-top: 0;
-      font-size: 20px;
-    }
-
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 16px;
     }
 
     label {
       display: block;
-      color: #aaa;
-      font-size: 13px;
+      margin-top: 18px;
       margin-bottom: 7px;
+      color: #d1d5db;
+      font-size: 14px;
     }
 
     input,
     select {
       width: 100%;
-      padding: 13px;
-      background: #080808;
-      border: 1px solid #333;
-      color: white;
-      border-radius: 8px;
-      font-size: 14px;
-    }
-
-    .traits {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 10px;
-      margin-top: 10px;
-    }
-
-    .trait {
-      background: #0a0a0a;
-      border: 1px solid #292929;
       padding: 12px;
       border-radius: 8px;
-      cursor: pointer;
+      border: 1px solid #374151;
+      background: #0f172a;
+      color: white;
+      font-size: 15px;
     }
 
-    .trait input {
+    .options {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .options label {
+      margin: 0;
+    }
+
+    .options input {
       width: auto;
-      margin-right: 8px;
+      margin-right: 5px;
     }
 
     button {
-      width: 100%;
-      padding: 16px;
-      margin-top: 20px;
-      background: white;
-      color: black;
-      border: 0;
-      border-radius: 9px;
-      font-size: 14px;
-      font-weight: 900;
+      border: none;
+      border-radius: 8px;
+      padding: 12px 18px;
+      margin-top: 22px;
+      background: #facc15;
+      color: #111827;
+      font-weight: bold;
       cursor: pointer;
     }
 
     button:hover {
-      background: #ddd;
+      opacity: 0.9;
     }
 
-    .status {
+    #status {
       margin-top: 15px;
-      color: #aaa;
-      font-size: 14px;
-      text-align: center;
+      color: #9ca3af;
     }
 
-    .matches {
-      display: grid;
-      gap: 12px;
+    .match {
+      border-top: 1px solid #1f2937;
+      padding: 18px 0;
     }
 
-    .player {
-      border: 1px solid #292929;
-      background: #0b0b0b;
-      border-radius: 10px;
-      padding: 17px;
+    .match:first-child {
+      border-top: none;
+    }
+
+    .match-header {
       display: flex;
-      align-items: center;
       justify-content: space-between;
       gap: 15px;
+      align-items: center;
     }
 
-    .player-info strong {
-      display: block;
-      font-size: 17px;
-      margin-bottom: 6px;
+    .match-name {
+      font-size: 18px;
+      font-weight: bold;
     }
 
-    .player-info span {
-      color: #888;
-      font-size: 12px;
+    .match-info {
+      color: #9ca3af;
+      font-size: 13px;
+      margin-top: 6px;
+      line-height: 1.5;
     }
 
-    .invite {
-      width: auto;
-      margin: 0;
-      padding: 10px 15px;
+    .match-score {
+      font-size: 18px;
+      font-weight: bold;
+      color: #facc15;
       white-space: nowrap;
     }
 
-    .invitation {
-      border: 1px solid #292929;
-      background: #0b0b0b;
-      border-radius: 10px;
-      padding: 17px;
-      margin-bottom: 12px;
+    .match-reasons {
+      margin-top: 10px;
+      color: #d1d5db;
+      font-size: 13px;
+      line-height: 1.6;
     }
 
-    .invitation strong {
+    .invite-button {
+      margin-top: 12px;
+      background: #facc15;
+      color: #111827;
+      padding: 9px 14px;
+    }
+
+    .invitation,
+    .squad-member {
+      border-top: 1px solid #1f2937;
+      padding: 16px 0;
+    }
+
+    .invitation:first-child,
+    .squad-member:first-child {
+      border-top: none;
+    }
+
+    .invitation span,
+    .squad-member span {
       display: block;
-      font-size: 16px;
-      margin-bottom: 6px;
-    }
-
-    .invitation span {
-      color: #888;
-      font-size: 12px;
+      color: #9ca3af;
+      font-size: 13px;
+      margin-top: 5px;
     }
 
     .invitation-buttons {
       display: flex;
       gap: 10px;
-      margin-top: 15px;
     }
 
     .invitation-buttons button {
-      margin: 0;
-      width: auto;
-      padding: 10px 15px;
+      margin-top: 12px;
     }
 
     .accept {
-      background: white;
-      color: black;
+      background: #22c55e;
+      color: #052e16;
     }
 
     .reject {
-      background: #222;
+      background: #374151;
       color: white;
-      border: 1px solid #444;
-    }
-
-    .squad-member {
-      border: 1px solid #292929;
-      background: #0b0b0b;
-      border-radius: 10px;
-      padding: 17px;
-      margin-bottom: 12px;
-    }
-
-    .squad-member strong {
-      display: block;
-      font-size: 18px;
-      margin-bottom: 6px;
-    }
-
-    .squad-member span {
-      color: #888;
-      font-size: 12px;
     }
 
     footer {
       text-align: center;
-      color: #555;
+      color: #6b7280;
       font-size: 12px;
-      padding: 35px 0;
-    }
-
-    @media (max-width: 700px) {
-      .grid,
-      .traits {
-        grid-template-columns: 1fr;
-      }
-
-      .player {
-        align-items: flex-start;
-        flex-direction: column;
-      }
-
-      .invite {
-        width: 100%;
-      }
-
-      .invitation-buttons {
-        flex-direction: column;
-      }
-
-      .invitation-buttons button {
-        width: 100%;
-      }
+      padding: 30px 0 50px;
     }
   </style>
 </head>
 
 <body>
 
-<header>
   <div class="container">
-    <span class="logo">SQUADLY</span>
-    <span class="beta">BETA · BF6</span>
-  </div>
-</header>
 
-<main class="container">
-
-  <section class="hero">
-    <h1>Find your squad.<br>Keep your squad.</h1>
-
-    <div class="subtitle">
-      Find Battlefield 6 players who actually fit your playstyle.
-    </div>
-  </section>
-
-  <section class="card">
-
-    <h2>Create your profile</h2>
-
-    <div class="grid">
-
-      <div>
-        <label>Username</label>
-        <input id="username" type="text" placeholder="Your gamer tag">
-      </div>
-
-      <div>
-        <label>Platform</label>
-        <select id="platform">
-          <option value="PC">PC</option>
-          <option value="PS5">PS5</option>
-          <option value="Xbox">Xbox</option>
-        </select>
-      </div>
-
-      <div>
-        <label>Playstyle</label>
-        <select id="playstyle">
-          <option value="Objective">Objective</option>
-          <option value="Casual">Casual</option>
-          <option value="Competitive">Competitive</option>
-          <option value="K/D-focused">K/D-focused</option>
-        </select>
-      </div>
-
-      <div>
-        <label>Voice chat</label>
-        <select id="mic">
-          <option value="true">Yes</option>
-          <option value="false">No</option>
-        </select>
-      </div>
-
-      <div>
-        <label>Region</label>
-        <select id="region">
-          <option value="EU">EU</option>
-          <option value="NA">NA</option>
-        </select>
-      </div>
-
-      <div>
-        <label>Typical session</label>
-        <select id="session_time">
-          <option value="18:00–21:00">18:00–21:00</option>
-          <option value="20:00–23:00">20:00–23:00</option>
-          <option value="21:00–00:00">21:00–00:00</option>
-          <option value="16:00–20:00">16:00–20:00</option>
-        </select>
-      </div>
-
-    </div>
-
-    <h2 style="margin-top:25px;">What matters to you?</h2>
-
-    <div class="traits">
-
-      <label class="trait">
-        <input type="checkbox" value="Non-toxic">
-        Non-toxic
-      </label>
-
-      <label class="trait">
-        <input type="checkbox" value="Communicates">
-        Communicates
-      </label>
-
-      <label class="trait">
-        <input type="checkbox" value="Objectives">
-        Objectives
-      </label>
-
-      <label class="trait">
-        <input type="checkbox" value="Revives">
-        Revives
-      </label>
-
-    </div>
-
-    <button onclick="saveProfile()">
-      SAVE PROFILE & FIND MY SQUAD
-    </button>
-
-    <div id="status" class="status"></div>
-
-  </section>
-
-  <section class="card" id="resultsSection" style="display:none;">
-
-    <h2>Compatible players</h2>
-
-    <div id="matches" class="matches"></div>
-
-  </section>
-
-  <section class="card" id="invitesSection" style="display:none;">
-
-    <h2>Squad invitations</h2>
-
-    <div id="invitesList"></div>
-
-  </section>
-
-  <section class="card" id="squadSection" style="display:none;">
-
-    <h2>Your Squad</h2>
-
-    <div id="squadList"></div>
-
-  </section>
-
-</main>
-
-<footer>
-  SQUADLY · Battlefield 6 matchmaking prototype
-</footer>
-
-
-<script>
-
-const SUPABASE_URL =
-  "https://jpymenfnzecdfpzgpccr.supabase.co";
-
-const SUPABASE_PUBLISHABLE_KEY =
-  "sb_publishable_stQYAmj7asHVVa-Qq5VdnA_Yl-R2VuC";
-
-const db = window.supabase.createClient(
-  SUPABASE_URL,
-  SUPABASE_PUBLISHABLE_KEY
-);
-
-
-/* =========================
-   SAVE / UPDATE PROFILE
-========================= */
-
-async function saveProfile() {
-
-  const username =
-    document.getElementById("username").value.trim();
-
-  const status =
-    document.getElementById("status");
-
-  if (!username) {
-    status.textContent =
-      "Enter your username first.";
-    return;
-  }
-
-  const traits =
-    Array.from(
-      document.querySelectorAll(".trait input:checked")
-    ).map(input => input.value);
-
-  const profile = {
-    username: username,
-    platform: document.getElementById("platform").value,
-    playstyle: document.getElementById("playstyle").value,
-    mic: document.getElementById("mic").value === "true",
-    region: document.getElementById("region").value,
-    session_time: document.getElementById("session_time").value,
-    traits: traits.join(",")
-  };
-
-  status.textContent =
-    "Saving your profile...";
-
-
-  /*
-    IMPORTANT:
-
-    Primer mirem si el username ja existeix.
-    Si existeix -> UPDATE.
-    Si no existeix -> INSERT.
-  */
-
-  const { data: existingProfile, error: findError } =
-    await db
-      .from("profiles")
-      .select("id")
-      .eq("username", username)
-      .maybeSingle();
-
-
-  if (findError) {
-
-    console.error(findError);
-
-    status.textContent =
-      "Could not check your profile: " +
-      findError.message;
-
-    return;
-  }
-
-
-  let saveError = null;
-
-
-  if (existingProfile) {
-
-    const { error } =
-      await db
-        .from("profiles")
-        .update(profile)
-        .eq("id", existingProfile.id);
-
-    saveError = error;
-
-  } else {
-
-    const { error } =
-      await db
-        .from("profiles")
-        .insert(profile);
-
-    saveError = error;
-  }
-
-
-  if (saveError) {
-
-    console.error(saveError);
-
-    status.textContent =
-      "Error saving profile: " +
-      saveError.message;
-
-    return;
-  }
-
-
-  status.textContent =
-    "Profile saved. Finding your squad...";
-
-
-  await findMatches(profile);
-  await loadInvites(username);
-  await loadSquad(username);
-}
-
-
-/* =========================
-   FIND MATCHES
-========================= */
-
-async function findMatches(myProfile) {
-
-  const { data, error } =
-    await db
-      .from("profiles")
-      .select("*")
-      .limit(100);
-
-
-  if (error) {
-
-    console.error(error);
-
-    document.getElementById("status").textContent =
-      "Could not load players.";
-
-    return;
-  }
-
-
-  const otherPlayers =
-    (data || []).filter(
-      player =>
-        player.username !== myProfile.username
-    );
-
-
-  const scoredPlayers =
-    otherPlayers.map(player => {
-
-      let score = 0;
-
-
-      if (player.platform === myProfile.platform) {
-        score += 20;
-      }
-
-      if (player.playstyle === myProfile.playstyle) {
-        score += 30;
-      }
-
-      if (player.region === myProfile.region) {
-        score += 25;
-      }
-
-      if (player.session_time === myProfile.session_time) {
-        score += 25;
-      }
-
-      if (player.mic === myProfile.mic) {
-        score += 10;
-      }
-
-
-      const myTraits =
-        (myProfile.traits || "")
-          .split(",")
-          .filter(Boolean);
-
-
-      const theirTraits =
-        (player.traits || "")
-          .split(",")
-          .filter(Boolean);
-
-
-      myTraits.forEach(trait => {
-
-        if (theirTraits.includes(trait)) {
-          score += 5;
-        }
-
-      });
-
-
-      /*
-        El màxim real pot arribar a 130
-        si coincideixen els 4 traits.
-
-        Per evitar que surti més de 100%,
-        limitem el resultat.
-      */
-
-      const maxScore = 130;
-
-      const normalizedScore =
-        Math.min(
-          100,
-          Math.round((score / maxScore) * 100)
-        );
-
-
-      return {
-        ...player,
-        score: normalizedScore
-      };
-
-    });
-
-
-  scoredPlayers.sort(
-    (a, b) => b.score - a.score
-  );
-
-
-  displayMatches(
-    scoredPlayers.slice(0, 5)
-  );
-}
-
-
-/* =========================
-   DISPLAY MATCHES
-========================= */
-
-function displayMatches(players) {
-
-  const section =
-    document.getElementById("resultsSection");
-
-  const container =
-    document.getElementById("matches");
-
-
-  section.style.display = "block";
-
-  container.innerHTML = "";
-
-
-  if (players.length === 0) {
-
-    container.innerHTML = `
-      <div class="status">
-        No players found yet. Share SQUADLY with other BF6 players.
-      </div>
-    `;
-
-    document.getElementById("status").textContent =
-      "Profile saved.";
-
-    return;
-  }
-
-
-  players.forEach(player => {
-
-    const div =
-      document.createElement("div");
-
-
-    div.className = "player";
-
-
-    div.innerHTML = `
-      <div class="player-info">
-
-        <strong>
-          ${escapeHtml(player.username)}
-        </strong>
-
-        <span>
-          ${escapeHtml(player.platform)}
-          · ${escapeHtml(player.playstyle)}
-          · ${escapeHtml(player.region)}
-          · ${escapeHtml(player.session_time)}
-          · Match ${player.score}%
-        </span>
+    <header>
+      <h1>SQUADLY</h1>
+      <p>Find Battlefield 6 players who actually fit your playstyle.</p>
+    </header>
+
+    <section class="card">
+
+      <h2>Create your profile</h2>
+
+      <label for="username">Username</label>
+      <input id="username" type="text" placeholder="Your username">
+
+      <label for="platform">Platform</label>
+      <select id="platform">
+        <option value="PC">PC</option>
+        <option value="PS5">PS5</option>
+        <option value="Xbox">Xbox</option>
+      </select>
+
+      <label for="playstyle">Playstyle</label>
+      <select id="playstyle">
+        <option value="Objective">Objective</option>
+        <option value="Casual">Casual</option>
+        <option value="Competitive">Competitive</option>
+        <option value="K/D-focused">K/D-focused</option>
+      </select>
+
+      <label for="mic">Voice chat</label>
+      <select id="mic">
+        <option value="Yes">Yes</option>
+        <option value="No">No</option>
+      </select>
+
+      <label for="region">Region</label>
+      <select id="region">
+        <option value="EU">EU</option>
+        <option value="NA">NA</option>
+      </select>
+
+      <label for="session_time">Typical session</label>
+      <select id="session_time">
+        <option value="18:00–21:00">18:00–21:00</option>
+        <option value="20:00–23:00">20:00–23:00</option>
+        <option value="21:00–00:00">21:00–00:00</option>
+        <option value="16:00–20:00">16:00–20:00</option>
+      </select>
+
+      <label>What matters to you?</label>
+
+      <div class="options">
+
+        <label>
+          <input type="checkbox" value="Non-toxic" class="trait">
+          Non-toxic
+        </label>
+
+        <label>
+          <input type="checkbox" value="Communicates" class="trait">
+          Communicates
+        </label>
+
+        <label>
+          <input type="checkbox" value="Objectives" class="trait">
+          Objectives
+        </label>
+
+        <label>
+          <input type="checkbox" value="Revives" class="trait">
+          Revives
+        </label>
 
       </div>
 
-      <button
-        class="invite"
-        data-username="${escapeHtml(player.username)}">
-        INVITE
+      <button onclick="saveProfile()">
+        SAVE PROFILE & FIND MY SQUAD
       </button>
-    `;
+
+      <div id="status"></div>
+
+    </section>
 
 
-    const inviteButton =
-      div.querySelector(".invite");
+    <section class="card" id="matchesSection" style="display:none;">
+
+      <h2>Compatible players</h2>
+
+      <div id="matchesList"></div>
+
+    </section>
 
 
-    inviteButton.addEventListener(
-      "click",
-      function () {
-        invitePlayer(player.username);
+    <section class="card" id="invitesSection" style="display:none;">
+
+      <h2>Squad invitations</h2>
+
+      <div id="invitesList"></div>
+
+    </section>
+
+
+    <section class="card" id="squadSection" style="display:none;">
+
+      <h2>Your squad</h2>
+
+      <div id="squadList"></div>
+
+    </section>
+
+
+    <footer>
+      SQUADLY · Battlefield 6 matchmaking prototype
+    </footer>
+
+  </div>
+
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <script>
+
+    const SUPABASE_URL =
+      "https://jpymenfnzecdfpzgpccr.supabase.co";
+
+    const SUPABASE_PUBLISHABLE_KEY =
+      "sb_publishable_stQYAmj7asHVVa-Qq5VdnA_Yl-R2VuC";
+
+    const db =
+      window.supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_PUBLISHABLE_KEY
+      );
+
+
+    function escapeHtml(value) {
+
+      if (value === null || value === undefined) {
+        return "";
       }
-    );
 
-
-    container.appendChild(div);
-
-  });
-
-
-  document.getElementById("status").textContent =
-    "Your profile is live. Squad matches found.";
-}
-
-
-/* =========================
-   SEND INVITE
-========================= */
-
-async function invitePlayer(username) {
-
-  const senderUsername =
-    document.getElementById("username").value.trim();
-
-
-  const status =
-    document.getElementById("status");
-
-
-  if (!senderUsername) {
-
-    status.textContent =
-      "Create your profile first.";
-
-    return;
-  }
-
-
-  if (senderUsername === username) {
-
-    status.textContent =
-      "You cannot invite yourself.";
-
-    return;
-  }
-
-
-  status.textContent =
-    "Sending invite to " + username + "...";
-
-
-  /*
-    Comprovar si ja existeix una invitació
-    pendent entre els dos jugadors.
-  */
-
-  const { data: existingInvite, error: checkError } =
-    await db
-      .from("invites")
-      .select("id")
-      .eq("from", senderUsername)
-      .eq("to", username)
-      .eq("status", "pending")
-      .maybeSingle();
-
-
-  if (checkError) {
-
-    console.error(checkError);
-
-    status.textContent =
-      "Could not check invitation: " +
-      checkError.message;
-
-    return;
-  }
-
-
-  if (existingInvite) {
-
-    status.textContent =
-      "You already invited " + username + ".";
-
-    return;
-  }
-
-
-  const { error } =
-    await db
-      .from("invites")
-      .insert({
-        from: senderUsername,
-        to: username,
-        status: "pending"
-      });
-
-
-  if (error) {
-
-    console.error(error);
-
-    status.textContent =
-      "Could not send invite: " +
-      error.message;
-
-    return;
-  }
-
-
-  status.textContent =
-    "Invite sent to " + username + "!";
-}
-
-
-/* =========================
-   LOAD INVITATIONS
-========================= */
-
-async function loadInvites(username) {
-
-  const section =
-    document.getElementById("invitesSection");
-
-  const container =
-    document.getElementById("invitesList");
-
-
-  const { data, error } =
-    await db
-      .from("invites")
-      .select("*")
-      .eq("to", username)
-      .eq("status", "pending")
-      .order("created_at", {
-        ascending: false
-      });
-
-
-  if (error) {
-
-    console.error(error);
-
-    return;
-  }
-
-
-  if (!data || data.length === 0) {
-
-    section.style.display = "none";
-
-    container.innerHTML = "";
-
-    return;
-  }
-
-
-  section.style.display = "block";
-
-  container.innerHTML = "";
-
-
-  data.forEach(invite => {
-
-    const div =
-      document.createElement("div");
-
-
-    div.className = "invitation";
-
-
-    div.innerHTML = `
-      <strong>
-        ${escapeHtml(invite.from)}
-        wants to squad up with you.
-      </strong>
-
-      <span>
-        New squad invitation
-      </span>
-
-      <div class="invitation-buttons">
-
-        <button
-          class="accept"
-          onclick="respondToInvite(${invite.id}, 'accepted')">
-          ACCEPT
-        </button>
-
-        <button
-          class="reject"
-          onclick="respondToInvite(${invite.id}, 'rejected')">
-          REJECT
-        </button>
-
-      </div>
-    `;
-
-
-    container.appendChild(div);
-
-  });
-}
-
-
-/* =========================
-   ACCEPT / REJECT INVITE
-========================= */
-
-async function respondToInvite(inviteId, newStatus) {
-
-  const username =
-    document.getElementById("username").value.trim();
-
-
-  if (!username) {
-    return;
-  }
-
-
-  const { data: invite, error: inviteError } =
-    await db
-      .from("invites")
-      .select("*")
-      .eq("id", inviteId)
-      .single();
-
-
-  if (inviteError) {
-
-    console.error(inviteError);
-
-    document.getElementById("status").textContent =
-      "Could not load invitation: " +
-      inviteError.message;
-
-    return;
-  }
-
-
-  /*
-    Actualitzem la invitació.
-  */
-
-  const { error: updateError } =
-    await db
-      .from("invites")
-      .update({
-        status: newStatus
-      })
-      .eq("id", inviteId);
-
-
-  if (updateError) {
-
-    console.error(updateError);
-
-    document.getElementById("status").textContent =
-      "Could not update invitation: " +
-      updateError.message;
-
-    return;
-  }
-
-
-  /*
-    Si acceptem:
-    crear squad entre els dos jugadors.
-  */
-
-  if (newStatus === "accepted") {
-
-
-    /*
-      Abans de crear-lo, comprovem
-      que no existeixi ja.
-    */
-
-    const { data: existingSquad, error: squadCheckError } =
-      await db
-        .from("squads")
-        .select("*")
-        .or(
-          `and(player1.eq.${invite.from},player2.eq.${username}),and(player1.eq.${username},player2.eq.${invite.from})`
-        )
-        .maybeSingle();
-
-
-    if (squadCheckError) {
-
-      console.error(squadCheckError);
-
-      document.getElementById("status").textContent =
-        "Could not check squad: " +
-        squadCheckError.message;
-
-      return;
+      return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
     }
 
 
-    if (!existingSquad) {
+    function getProfileFromForm() {
 
-      const { error: squadError } =
-        await db
-          .from("squads")
-          .insert({
-            player1: invite.from,
-            player2: username
-          });
+      const traits =
+        Array.from(
+          document.querySelectorAll(".trait:checked")
+        ).map(input => input.value);
+
+      return {
+        username:
+          document.getElementById("username").value.trim(),
+
+        platform:
+          document.getElementById("platform").value,
+
+        playstyle:
+          document.getElementById("playstyle").value,
+
+        mic:
+          document.getElementById("mic").value,
+
+        region:
+          document.getElementById("region").value,
+
+        session_time:
+          document.getElementById("session_time").value,
+
+        traits
+      };
+    }
 
 
-      if (squadError) {
+    async function saveProfile() {
 
-        console.error(squadError);
+      const profile =
+        getProfileFromForm();
 
-        document.getElementById("status").textContent =
-          "Invitation accepted, but squad could not be created: " +
-          squadError.message;
+      const status =
+        document.getElementById("status");
+
+      if (!profile.username) {
+
+        status.textContent =
+          "Please enter a username.";
 
         return;
       }
+
+      status.textContent =
+        "Saving your profile...";
+
+
+      const {
+        data: existingProfile,
+        error: findError
+      } =
+        await db
+          .from("profiles")
+          .select("id")
+          .eq("username", profile.username)
+          .maybeSingle();
+
+
+      if (findError) {
+
+        console.error(findError);
+
+        status.textContent =
+          "Could not check your profile: " +
+          findError.message;
+
+        return;
+      }
+
+
+      if (existingProfile) {
+
+        const { error } =
+          await db
+            .from("profiles")
+            .update(profile)
+            .eq("id", existingProfile.id);
+
+        if (error) {
+
+          console.error(error);
+
+          status.textContent =
+            "Could not update your profile: " +
+            error.message;
+
+          return;
+        }
+
+      } else {
+
+        const { error } =
+          await db
+            .from("profiles")
+            .insert(profile);
+
+        if (error) {
+
+          console.error(error);
+
+          status.textContent =
+            "Could not save your profile: " +
+            error.message;
+
+          return;
+        }
+      }
+
+
+      status.textContent =
+        "Your profile is live. Squad matches found.";
+
+
+      await findMatches(profile);
+
+      await loadInvites(profile.username);
+
+      await loadSquad(profile.username);
     }
-  }
 
 
-  document.getElementById("status").textContent =
-    newStatus === "accepted"
-      ? "Invitation accepted! Squad created."
-      : "Invitation rejected.";
+    async function findMatches(myProfile) {
+
+      const section =
+        document.getElementById("matchesSection");
+
+      const container =
+        document.getElementById("matchesList");
 
 
-  await loadInvites(username);
-  await loadSquad(username);
-}
+      const {
+        data,
+        error
+      } =
+        await db
+          .from("profiles")
+          .select("*")
+          .neq("username", myProfile.username);
 
 
-/* =========================
-   LOAD SQUAD
-========================= */
+      if (error) {
 
-async function loadSquad(username) {
+        console.error(error);
 
-  const section =
-    document.getElementById("squadSection");
+        container.innerHTML =
+          "<p>Could not load matches.</p>";
 
-  const container =
-    document.getElementById("squadList");
+        section.style.display = "block";
 
-
-  const { data, error } =
-    await db
-      .from("squads")
-      .select("*");
+        return;
+      }
 
 
-  if (error) {
+      const matches =
+        (data || []).map(player => {
 
-    console.error(error);
+          let score = 0;
 
-    return;
-  }
-
-
-  const mySquads =
-    (data || []).filter(
-      squad =>
-        squad.player1 === username ||
-        squad.player2 === username
-    );
+          const reasons = [];
 
 
-  if (mySquads.length === 0) {
+          if (
+            player.platform ===
+            myProfile.platform
+          ) {
 
-    section.style.display = "none";
+            score += 20;
 
-    container.innerHTML = "";
-
-    return;
-  }
-
-
-  section.style.display = "block";
-
-  container.innerHTML = "";
+            reasons.push("Same platform");
+          }
 
 
-  mySquads.forEach(squad => {
+          if (
+            player.playstyle ===
+            myProfile.playstyle
+          ) {
 
-    const otherPlayer =
-      squad.player1 === username
-        ? squad.player2
-        : squad.player1;
+            score += 30;
 
-
-    const div =
-      document.createElement("div");
-
-
-    div.className = "squad-member";
+            reasons.push("Same playstyle");
+          }
 
 
-    div.innerHTML = `
-      <strong>
-        ${escapeHtml(otherPlayer)}
-      </strong>
+          if (
+            player.region ===
+            myProfile.region
+          ) {
 
-      <span>
-        Squad member
-      </span>
-    `;
+            score += 25;
 
-
-    container.appendChild(div);
-
-  });
-}
+            reasons.push("Same region");
+          }
 
 
-/* =========================
-   ESCAPE HTML
-========================= */
+          if (
+            player.session_time ===
+            myProfile.session_time
+          ) {
 
-function escapeHtml(text) {
+            score += 25;
 
-  const div =
-    document.createElement("div");
+            reasons.push("Same session");
+          }
 
-  div.textContent =
-    text == null ? "" : String(text);
 
-  return div.innerHTML;
-}
+          if (
+            player.mic ===
+            myProfile.mic
+          ) {
 
-</script>
+            score += 10;
+
+            reasons.push("Same voice chat preference");
+          }
+
+
+          const myTraits =
+            myProfile.traits || [];
+
+          const theirTraits =
+            player.traits || [];
+
+
+          const sharedTraits =
+            myTraits.filter(
+              trait =>
+                theirTraits.includes(trait)
+            );
+
+
+          score +=
+            sharedTraits.length * 5;
+
+
+          sharedTraits.forEach(trait => {
+
+            reasons.push(
+              "Both value " + trait
+            );
+
+          });
+
+
+          const maxScore = 130;
+
+          const percentage =
+            Math.min(
+              100,
+              Math.round(
+                (score / maxScore) * 100
+              )
+            );
+
+
+          return {
+            ...player,
+            score,
+            percentage,
+            reasons
+          };
+
+        });
+
+
+      matches.sort(
+        (a, b) =>
+          b.score - a.score
+      );
+
+
+      const topMatches =
+        matches.slice(0, 5);
+
+
+      section.style.display =
+        "block";
+
+      container.innerHTML = "";
+
+
+      if (topMatches.length === 0) {
+
+        container.innerHTML =
+          "<p>No compatible players found yet.</p>";
+
+        return;
+      }
+
+
+      topMatches.forEach(player => {
+
+        const div =
+          document.createElement("div");
+
+        div.className = "match";
+
+
+        const reasonsText =
+          player.reasons.length > 0
+            ? player.reasons.join(" · ")
+            : "No major profile similarities yet";
+
+
+        div.innerHTML = `
+
+          <div class="match-header">
+
+            <div>
+
+              <div class="match-name">
+                ${escapeHtml(player.username)}
+              </div>
+
+              <div class="match-info">
+                ${escapeHtml(player.platform)}
+                ·
+                ${escapeHtml(player.playstyle)}
+                ·
+                ${escapeHtml(player.region)}
+                ·
+                ${escapeHtml(player.session_time)}
+              </div>
+
+            </div>
+
+            <div class="match-score">
+              ${player.percentage}%
+            </div>
+
+          </div>
+
+
+          <div class="match-reasons">
+            <strong>Why you match:</strong>
+            ${escapeHtml(reasonsText)}
+          </div>
+
+
+          <button
+            class="invite-button"
+            onclick="invitePlayer('${escapeHtml(player.username)}')">
+            INVITE
+          </button>
+
+        `;
+
+
+        container.appendChild(div);
+
+      });
+
+    }
+
+
+    async function invitePlayer(username) {
+
+      const senderUsername =
+        document
+          .getElementById("username")
+          .value
+          .trim();
+
+      const status =
+        document.getElementById("status");
+
+
+      if (!senderUsername) {
+
+        status.textContent =
+          "Create your profile first.";
+
+        return;
+      }
+
+
+      if (senderUsername === username) {
+
+        status.textContent =
+          "You cannot invite yourself.";
+
+        return;
+      }
+
+
+      status.textContent =
+        "Sending invite to " +
+        username +
+        "...";
+
+
+      const {
+        data: existingInvite,
+        error: checkError
+      } =
+        await db
+          .from("invites")
+          .select("id")
+          .eq("from", senderUsername)
+          .eq("to", username)
+          .eq("status", "pending")
+          .maybeSingle();
+
+
+      if (checkError) {
+
+        console.error(checkError);
+
+        status.textContent =
+          "Could not check invitation: " +
+          checkError.message;
+
+        return;
+      }
+
+
+      if (existingInvite) {
+
+        status.textContent =
+          "You already invited " +
+          username +
+          ".";
+
+        return;
+      }
+
+
+      const { error } =
+        await db
+          .from("invites")
+          .insert({
+
+            from: senderUsername,
+
+            to: username,
+
+            status: "pending"
+
+          });
+
+
+      if (error) {
+
+        console.error(error);
+
+        status.textContent =
+          "Could not send invite: " +
+          error.message;
+
+        return;
+      }
+
+
+      status.textContent =
+        "Invite sent to " +
+        username +
+        "!";
+    }
+
+
+    async function loadInvites(username) {
+
+      const section =
+        document.getElementById(
+          "invitesSection"
+        );
+
+      const container =
+        document.getElementById(
+          "invitesList"
+        );
+
+
+      const {
+        data,
+        error
+      } =
+        await db
+          .from("invites")
+          .select("*")
+          .eq("to", username)
+          .eq("status", "pending")
+          .order(
+            "created_at",
+            {
+              ascending: false
+            }
+          );
+
+
+      if (error) {
+
+        console.error(error);
+
+        return;
+      }
+
+
+      if (
+        !data ||
+        data.length === 0
+      ) {
+
+        section.style.display =
+          "none";
+
+        container.innerHTML =
+          "";
+
+        return;
+      }
+
+
+      section.style.display =
+        "block";
+
+      container.innerHTML =
+        "";
+
+
+      data.forEach(invite => {
+
+        const div =
+          document.createElement("div");
+
+        div.className =
+          "invitation";
+
+
+        div.innerHTML = `
+
+          <strong>
+            ${escapeHtml(invite.from)}
+            wants to squad up with you.
+          </strong>
+
+          <span>
+            New squad invitation
+          </span>
+
+          <div class="invitation-buttons">
+
+            <button
+              class="accept"
+              onclick="respondToInvite(
+                ${invite.id},
+                'accepted'
+              )">
+              ACCEPT
+            </button>
+
+            <button
+              class="reject"
+              onclick="respondToInvite(
+                ${invite.id},
+                'rejected'
+              )">
+              REJECT
+            </button>
+
+          </div>
+
+        `;
+
+
+        container.appendChild(div);
+
+      });
+
+    }
+
+
+    async function respondToInvite(
+      inviteId,
+      newStatus
+    ) {
+
+      const username =
+        document
+          .getElementById("username")
+          .value
+          .trim();
+
+
+      if (!username) {
+        return;
+      }
+
+
+      const {
+        data: invite,
+        error: inviteError
+      } =
+        await db
+          .from("invites")
+          .select("*")
+          .eq("id", inviteId)
+          .single();
+
+
+      if (inviteError) {
+
+        console.error(inviteError);
+
+        document.getElementById(
+          "status"
+        ).textContent =
+          "Could not load invitation: " +
+          inviteError.message;
+
+        return;
+      }
+
+
+      const { error: updateError } =
+        await db
+          .from("invites")
+          .update({
+            status: newStatus
+          })
+          .eq("id", inviteId);
+
+
+      if (updateError) {
+
+        console.error(updateError);
+
+        document.getElementById(
+          "status"
+        ).textContent =
+          "Could not update invitation: " +
+          updateError.message;
+
+        return;
+      }
+
+
+      if (
+        newStatus === "accepted"
+      ) {
+
+        const {
+          data: existingSquad,
+          error: squadCheckError
+        } =
+          await db
+            .from("squads")
+            .select("*")
+            .or(
+              `and(player1.eq.${invite.from},player2.eq.${username}),and(player1.eq.${username},player2.eq.${invite.from})`
+            )
+            .maybeSingle();
+
+
+        if (squadCheckError) {
+
+          console.error(
+            squadCheckError
+          );
+
+          document.getElementById(
+            "status"
+          ).textContent =
+            "Could not check squad: " +
+            squadCheckError.message;
+
+          return;
+        }
+
+
+        if (!existingSquad) {
+
+          const {
+            error: squadError
+          } =
+            await db
+              .from("squads")
+              .insert({
+
+                player1:
+                  invite.from,
+
+                player2:
+                  username
+
+              });
+
+
+          if (squadError) {
+
+            console.error(
+              squadError
+            );
+
+            document.getElementById(
+              "status"
+            ).textContent =
+              "Invitation accepted, but squad could not be created: " +
+              squadError.message;
+
+            return;
+          }
+
+        }
+
+      }
+
+
+      document.getElementById(
+        "status"
+      ).textContent =
+        newStatus === "accepted"
+          ? "Invitation accepted! Squad created."
+          : "Invitation rejected.";
+
+
+      await loadInvites(
+        username
+      );
+
+      await loadSquad(
+        username
+      );
+
+    }
+
+
+    async function loadSquad(username) {
+
+      const section =
+        document.getElementById(
+          "squadSection"
+        );
+
+      const container =
+        document.getElementById(
+          "squadList"
+        );
+
+
+      const {
+        data,
+        error
+      } =
+        await db
+          .from("squads")
+          .select("*");
+
+
+      if (error) {
+
+        console.error(error);
+
+        return;
+      }
+
+
+      const mySquads =
+        (data || []).filter(
+          squad =>
+            squad.player1 === username ||
+            squad.player2 === username
+        );
+
+
+      if (
+        mySquads.length === 0
+      ) {
+
+        section.style.display =
+          "none";
+
+        container.innerHTML =
+          "";
+
+        return;
+      }
+
+
+      section.style.display =
+        "block";
+
+      container.innerHTML =
+        "";
+
+
+      mySquads.forEach(squad => {
+
+        const otherPlayer =
+          squad.player1 === username
+            ? squad.player2
+            : squad.player1;
+
+
+        const div =
+          document.createElement(
+            "div"
+          );
+
+        div.className =
+          "squad-member";
+
+
+        div.innerHTML = `
+
+          <strong>
+            ${escapeHtml(otherPlayer)}
+          </strong>
+
+          <span>
+            Squad member
+          </span>
+
+        `;
+
+
+        container.appendChild(
+          div
+        );
+
+      });
+
+    }
+
+  </script>
 
 </body>
 </html>
-```
