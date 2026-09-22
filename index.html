@@ -177,6 +177,48 @@
       white-space: nowrap;
     }
 
+    .invitation {
+      border: 1px solid #292929;
+      background: #0b0b0b;
+      border-radius: 10px;
+      padding: 17px;
+      margin-bottom: 12px;
+    }
+
+    .invitation strong {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 17px;
+    }
+
+    .invitation span {
+      color: #888;
+      font-size: 12px;
+    }
+
+    .invitation-buttons {
+      display: flex;
+      gap: 10px;
+      margin-top: 15px;
+    }
+
+    .accept,
+    .reject {
+      width: auto;
+      margin: 0;
+      padding: 10px 15px;
+    }
+
+    .accept {
+      background: white;
+      color: black;
+    }
+
+    .reject {
+      background: #222;
+      color: white;
+    }
+
     footer {
       text-align: center;
       color: #555;
@@ -196,6 +238,15 @@
       }
 
       .invite {
+        width: 100%;
+      }
+
+      .invitation-buttons {
+        flex-direction: column;
+      }
+
+      .accept,
+      .reject {
         width: 100%;
       }
     }
@@ -321,12 +372,19 @@
 
   </section>
 
+  <section class="card" id="invitesSection" style="display:none;">
+
+    <h2>Squad invitations</h2>
+
+    <div id="invitesList"></div>
+
+  </section>
+
 </main>
 
 <footer>
   SQUADLY · Battlefield 6 matchmaking prototype
 </footer>
-
 
 <script>
 
@@ -393,6 +451,8 @@ async function saveProfile() {
     "Profile saved. Finding your squad...";
 
   await findMatches(profile);
+
+  await loadInvites(username);
 }
 
 
@@ -596,6 +656,109 @@ async function invitePlayer(username) {
 
   status.textContent =
     "Invite sent to " + username + "!";
+}
+
+
+async function loadInvites(username) {
+
+  const section =
+    document.getElementById("invitesSection");
+
+  const container =
+    document.getElementById("invitesList");
+
+  const { data, error } =
+    await db
+      .from("invites")
+      .select("*")
+      .eq("to", username)
+      .eq("status", "pending")
+      .order("created_at", { ascending: false });
+
+  if (error) {
+
+    console.error(error);
+
+    return;
+  }
+
+  if (!data || data.length === 0) {
+
+    section.style.display = "none";
+    return;
+  }
+
+  section.style.display = "block";
+  container.innerHTML = "";
+
+  data.forEach(invite => {
+
+    const div =
+      document.createElement("div");
+
+    div.className = "invitation";
+
+    div.innerHTML = `
+      <strong>
+        ${escapeHtml(invite.from)} wants to squad up with you.
+      </strong>
+
+      <span>
+        New squad invitation
+      </span>
+
+      <div class="invitation-buttons">
+
+        <button
+          class="accept"
+          onclick="respondToInvite(${invite.id}, 'accepted')">
+          ACCEPT
+        </button>
+
+        <button
+          class="reject"
+          onclick="respondToInvite(${invite.id}, 'rejected')">
+          REJECT
+        </button>
+
+      </div>
+    `;
+
+    container.appendChild(div);
+
+  });
+}
+
+
+async function respondToInvite(inviteId, newStatus) {
+
+  const username =
+    document.getElementById("username").value.trim();
+
+  const { error } =
+    await db
+      .from("invites")
+      .update({
+        status: newStatus
+      })
+      .eq("id", inviteId);
+
+  if (error) {
+
+    console.error(error);
+
+    document.getElementById("status").textContent =
+      "Could not update invitation: " + error.message;
+
+    return;
+  }
+
+  document.getElementById("status").textContent =
+    newStatus === "accepted"
+      ? "Invitation accepted!"
+      : "Invitation rejected.";
+
+  await loadInvites(username);
 }
 
 
