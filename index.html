@@ -327,89 +327,101 @@
   SQUADLY · Battlefield 6 matchmaking prototype
 </footer>
 
+
 <script>
 
-  const SUPABASE_URL =
-    "https://jpymenfnzecdfpzgpccr.supabase.co";
+const SUPABASE_URL =
+  "https://jpymenfnzecdfpzgpccr.supabase.co";
 
-  const SUPABASE_PUBLISHABLE_KEY =
-    "sb_publishable_stQYAmj7asHVVa-Qq5VdnA_Yl-R2VuC";
+const SUPABASE_PUBLISHABLE_KEY =
+  "sb_publishable_stQYAmj7asHVVa-Qq5VdnA_Yl-R2VuC";
 
-  const db = window.supabase.createClient(
-    SUPABASE_URL,
-    SUPABASE_PUBLISHABLE_KEY
-  );
+const db = window.supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_PUBLISHABLE_KEY
+);
 
 
-  async function saveProfile() {
+async function saveProfile() {
 
-    const username =
-      document.getElementById("username").value.trim();
+  const username =
+    document.getElementById("username").value.trim();
 
-    if (!username) {
-      document.getElementById("status").textContent =
-        "Enter your username first.";
-      return;
-    }
+  const status =
+    document.getElementById("status");
 
-    const traits = Array.from(
+  if (!username) {
+    status.textContent =
+      "Enter your username first.";
+    return;
+  }
+
+  const traits =
+    Array.from(
       document.querySelectorAll(".trait input:checked")
     ).map(input => input.value);
 
-    const profile = {
-      username: username,
-      platform: document.getElementById("platform").value,
-      playstyle: document.getElementById("playstyle").value,
-      mic: document.getElementById("mic").value === "true",
-      region: document.getElementById("region").value,
-      session_time: document.getElementById("session_time").value,
-      traits: traits.join(",")
-    };
+  const profile = {
+    username: username,
+    platform: document.getElementById("platform").value,
+    playstyle: document.getElementById("playstyle").value,
+    mic: document.getElementById("mic").value === "true",
+    region: document.getElementById("region").value,
+    session_time: document.getElementById("session_time").value,
+    traits: traits.join(",")
+  };
 
-    document.getElementById("status").textContent =
-      "Saving your profile...";
+  status.textContent =
+    "Saving your profile...";
 
-    const { error } = await db
+  const { error } =
+    await db
       .from("profiles")
       .insert(profile);
 
-    if (error) {
-      console.error(error);
+  if (error) {
 
-      document.getElementById("status").textContent =
-        "Error saving profile: " + error.message;
+    console.error(error);
 
-      return;
-    }
+    status.textContent =
+      "Error saving profile: " + error.message;
 
-    document.getElementById("status").textContent =
-      "Profile saved. Finding your squad...";
-
-    await findMatches(profile);
+    return;
   }
 
+  status.textContent =
+    "Profile saved. Finding your squad...";
 
-  async function findMatches(myProfile) {
+  await findMatches(profile);
+}
 
-    const { data, error } = await db
+
+async function findMatches(myProfile) {
+
+  const { data, error } =
+    await db
       .from("profiles")
       .select("*")
       .limit(100);
 
-    if (error) {
-      console.error(error);
+  if (error) {
 
-      document.getElementById("status").textContent =
-        "Could not load players.";
+    console.error(error);
 
-      return;
-    }
+    document.getElementById("status").textContent =
+      "Could not load players.";
 
-    const otherPlayers = data.filter(
-      player => player.username !== myProfile.username
+    return;
+  }
+
+  const otherPlayers =
+    data.filter(
+      player =>
+        player.username !== myProfile.username
     );
 
-    const scoredPlayers = otherPlayers.map(player => {
+  const scoredPlayers =
+    otherPlayers.map(player => {
 
       let score = 0;
 
@@ -444,9 +456,11 @@
           .filter(Boolean);
 
       myTraits.forEach(trait => {
+
         if (theirTraits.includes(trait)) {
           score += 5;
         }
+
       });
 
       return {
@@ -456,94 +470,113 @@
 
     });
 
-    scoredPlayers.sort(
-      (a, b) => b.score - a.score
-    );
+  scoredPlayers.sort(
+    (a, b) => b.score - a.score
+  );
 
-    displayMatches(
-      scoredPlayers.slice(0, 5)
-    );
-  }
+  displayMatches(
+    scoredPlayers.slice(0, 5)
+  );
+}
 
 
-  function displayMatches(players) {
+function displayMatches(players) {
 
-    const section =
-      document.getElementById("resultsSection");
+  const section =
+    document.getElementById("resultsSection");
 
-    const container =
-      document.getElementById("matches");
+  const container =
+    document.getElementById("matches");
 
-    section.style.display = "block";
+  section.style.display = "block";
 
-    container.innerHTML = "";
+  container.innerHTML = "";
 
-    if (players.length === 0) {
+  if (players.length === 0) {
 
-      container.innerHTML = `
-        <div class="status">
-          No players found yet. Share SQUADLY with other BF6 players.
-        </div>
-      `;
-
-      document.getElementById("status").textContent =
-        "Profile saved.";
-
-      return;
-    }
-
-    players.forEach(player => {
-
-      const div =
-        document.createElement("div");
-
-      div.className = "player";
-
-      div.innerHTML = `
-        <div class="player-info">
-          <strong>${escapeHtml(player.username)}</strong>
-          <span>
-            ${escapeHtml(player.platform)}
-            · ${escapeHtml(player.playstyle)}
-            · ${escapeHtml(player.region)}
-            · ${escapeHtml(player.session_time)}
-            · Match ${player.score}%
-          </span>
-        </div>
-
-        <button
-          class="invite"
-          onclick="invitePlayer('${escapeHtml(player.username)}')">
-          INVITE
-        </button>
-      `;
-
-      container.appendChild(div);
-    });
+    container.innerHTML = `
+      <div class="status">
+        No players found yet. Share SQUADLY with other BF6 players.
+      </div>
+    `;
 
     document.getElementById("status").textContent =
-      "Your profile is live. Squad matches found.";
+      "Profile saved.";
+
+    return;
   }
 
+  players.forEach(player => {
 
-  async function invitePlayer(username) {
+    const div =
+      document.createElement("div");
 
-    const senderUsername =
-      document.getElementById("username").value.trim();
+    div.className = "player";
 
-    const status =
-      document.getElementById("status");
+    div.innerHTML = `
+      <div class="player-info">
 
-    if (!senderUsername) {
-      status.textContent =
-        "Create your profile first.";
-      return;
-    }
+        <strong>
+          ${escapeHtml(player.username)}
+        </strong>
+
+        <span>
+          ${escapeHtml(player.platform)}
+          · ${escapeHtml(player.playstyle)}
+          · ${escapeHtml(player.region)}
+          · ${escapeHtml(player.session_time)}
+          · Match ${player.score}%
+        </span>
+
+      </div>
+
+      <button
+        class="invite"
+        data-username="${escapeHtml(player.username)}">
+        INVITE
+      </button>
+    `;
+
+    const inviteButton =
+      div.querySelector(".invite");
+
+    inviteButton.addEventListener(
+      "click",
+      function () {
+        invitePlayer(player.username);
+      }
+    );
+
+    container.appendChild(div);
+
+  });
+
+  document.getElementById("status").textContent =
+    "Your profile is live. Squad matches found.";
+}
+
+
+async function invitePlayer(username) {
+
+  const senderUsername =
+    document.getElementById("username").value.trim();
+
+  const status =
+    document.getElementById("status");
+
+  if (!senderUsername) {
 
     status.textContent =
-      "Sending invite to " + username + "...";
+      "Create your profile first.";
 
-    const { error } = await db
+    return;
+  }
+
+  status.textContent =
+    "Sending invite to " + username + "...";
+
+  const { error } =
+    await db
       .from("invites")
       .insert({
         from: senderUsername,
@@ -551,29 +584,30 @@
         status: "pending"
       });
 
-    if (error) {
-      console.error(error);
+  if (error) {
 
-      status.textContent =
-        "Could not send invite: " + error.message;
-
-      return;
-    }
+    console.error(error);
 
     status.textContent =
-      "Invite sent to " + username + "!";
+      "Could not send invite: " + error.message;
+
+    return;
   }
 
+  status.textContent =
+    "Invite sent to " + username + "!";
+}
 
-  function escapeHtml(text) {
 
-    const div =
-      document.createElement("div");
+function escapeHtml(text) {
 
-    div.textContent = text;
+  const div =
+    document.createElement("div");
 
-    return div.innerHTML;
-  }
+  div.textContent = text;
+
+  return div.innerHTML;
+}
 
 </script>
 
