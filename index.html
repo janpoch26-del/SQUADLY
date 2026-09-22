@@ -1,6 +1,6 @@
 ```html
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ca">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -225,6 +225,7 @@
       background: #0b0b0b;
       border-radius: 10px;
       padding: 17px;
+      margin-bottom: 12px;
     }
 
     .squad-member strong {
@@ -427,6 +428,10 @@ const db = window.supabase.createClient(
 );
 
 
+/* =========================
+   SAVE / UPDATE PROFILE
+========================= */
+
 async function saveProfile() {
 
   const username =
@@ -459,29 +464,84 @@ async function saveProfile() {
   status.textContent =
     "Saving your profile...";
 
-  const { error } =
+
+  /*
+    IMPORTANT:
+
+    Primer mirem si el username ja existeix.
+    Si existeix -> UPDATE.
+    Si no existeix -> INSERT.
+  */
+
+  const { data: existingProfile, error: findError } =
     await db
       .from("profiles")
-      .insert(profile);
+      .select("id")
+      .eq("username", username)
+      .maybeSingle();
 
-  if (error) {
 
-    console.error(error);
+  if (findError) {
+
+    console.error(findError);
 
     status.textContent =
-      "Error saving profile: " + error.message;
+      "Could not check your profile: " +
+      findError.message;
 
     return;
   }
 
+
+  let saveError = null;
+
+
+  if (existingProfile) {
+
+    const { error } =
+      await db
+        .from("profiles")
+        .update(profile)
+        .eq("id", existingProfile.id);
+
+    saveError = error;
+
+  } else {
+
+    const { error } =
+      await db
+        .from("profiles")
+        .insert(profile);
+
+    saveError = error;
+  }
+
+
+  if (saveError) {
+
+    console.error(saveError);
+
+    status.textContent =
+      "Error saving profile: " +
+      saveError.message;
+
+    return;
+  }
+
+
   status.textContent =
     "Profile saved. Finding your squad...";
+
 
   await findMatches(profile);
   await loadInvites(username);
   await loadSquad(username);
 }
 
+
+/* =========================
+   FIND MATCHES
+========================= */
 
 async function findMatches(myProfile) {
 
@@ -490,6 +550,7 @@ async function findMatches(myProfile) {
       .from("profiles")
       .select("*")
       .limit(100);
+
 
   if (error) {
 
@@ -501,16 +562,19 @@ async function findMatches(myProfile) {
     return;
   }
 
+
   const otherPlayers =
-    data.filter(
+    (data || []).filter(
       player =>
         player.username !== myProfile.username
     );
+
 
   const scoredPlayers =
     otherPlayers.map(player => {
 
       let score = 0;
+
 
       if (player.platform === myProfile.platform) {
         score += 20;
@@ -532,15 +596,18 @@ async function findMatches(myProfile) {
         score += 10;
       }
 
+
       const myTraits =
-        myProfile.traits
+        (myProfile.traits || "")
           .split(",")
           .filter(Boolean);
+
 
       const theirTraits =
         (player.traits || "")
           .split(",")
           .filter(Boolean);
+
 
       myTraits.forEach(trait => {
 
@@ -550,10 +617,23 @@ async function findMatches(myProfile) {
 
       });
 
-      const maxScore = 110;
+
+      /*
+        El màxim real pot arribar a 130
+        si coincideixen els 4 traits.
+
+        Per evitar que surti més de 100%,
+        limitem el resultat.
+      */
+
+      const maxScore = 130;
 
       const normalizedScore =
-        Math.round((score / maxScore) * 100);
+        Math.min(
+          100,
+          Math.round((score / maxScore) * 100)
+        );
+
 
       return {
         ...player,
@@ -562,15 +642,21 @@ async function findMatches(myProfile) {
 
     });
 
+
   scoredPlayers.sort(
     (a, b) => b.score - a.score
   );
+
 
   displayMatches(
     scoredPlayers.slice(0, 5)
   );
 }
 
+
+/* =========================
+   DISPLAY MATCHES
+========================= */
 
 function displayMatches(players) {
 
@@ -580,9 +666,11 @@ function displayMatches(players) {
   const container =
     document.getElementById("matches");
 
+
   section.style.display = "block";
 
   container.innerHTML = "";
+
 
   if (players.length === 0) {
 
@@ -598,12 +686,15 @@ function displayMatches(players) {
     return;
   }
 
+
   players.forEach(player => {
 
     const div =
       document.createElement("div");
 
+
     div.className = "player";
+
 
     div.innerHTML = `
       <div class="player-info">
@@ -629,8 +720,10 @@ function displayMatches(players) {
       </button>
     `;
 
+
     const inviteButton =
       div.querySelector(".invite");
+
 
     inviteButton.addEventListener(
       "click",
@@ -639,22 +732,30 @@ function displayMatches(players) {
       }
     );
 
+
     container.appendChild(div);
 
   });
+
 
   document.getElementById("status").textContent =
     "Your profile is live. Squad matches found.";
 }
 
 
+/* =========================
+   SEND INVITE
+========================= */
+
 async function invitePlayer(username) {
 
   const senderUsername =
     document.getElementById("username").value.trim();
 
+
   const status =
     document.getElementById("status");
+
 
   if (!senderUsername) {
 
@@ -664,8 +765,55 @@ async function invitePlayer(username) {
     return;
   }
 
+
+  if (senderUsername === username) {
+
+    status.textContent =
+      "You cannot invite yourself.";
+
+    return;
+  }
+
+
   status.textContent =
     "Sending invite to " + username + "...";
+
+
+  /*
+    Comprovar si ja existeix una invitació
+    pendent entre els dos jugadors.
+  */
+
+  const { data: existingInvite, error: checkError } =
+    await db
+      .from("invites")
+      .select("id")
+      .eq("from", senderUsername)
+      .eq("to", username)
+      .eq("status", "pending")
+      .maybeSingle();
+
+
+  if (checkError) {
+
+    console.error(checkError);
+
+    status.textContent =
+      "Could not check invitation: " +
+      checkError.message;
+
+    return;
+  }
+
+
+  if (existingInvite) {
+
+    status.textContent =
+      "You already invited " + username + ".";
+
+    return;
+  }
+
 
   const { error } =
     await db
@@ -676,20 +824,27 @@ async function invitePlayer(username) {
         status: "pending"
       });
 
+
   if (error) {
 
     console.error(error);
 
     status.textContent =
-      "Could not send invite: " + error.message;
+      "Could not send invite: " +
+      error.message;
 
     return;
   }
+
 
   status.textContent =
     "Invite sent to " + username + "!";
 }
 
+
+/* =========================
+   LOAD INVITATIONS
+========================= */
 
 async function loadInvites(username) {
 
@@ -699,13 +854,17 @@ async function loadInvites(username) {
   const container =
     document.getElementById("invitesList");
 
+
   const { data, error } =
     await db
       .from("invites")
       .select("*")
       .eq("to", username)
       .eq("status", "pending")
-      .order("created_at", { ascending: false });
+      .order("created_at", {
+        ascending: false
+      });
+
 
   if (error) {
 
@@ -714,27 +873,35 @@ async function loadInvites(username) {
     return;
   }
 
+
   if (!data || data.length === 0) {
 
     section.style.display = "none";
 
+    container.innerHTML = "";
+
     return;
   }
+
 
   section.style.display = "block";
 
   container.innerHTML = "";
+
 
   data.forEach(invite => {
 
     const div =
       document.createElement("div");
 
+
     div.className = "invitation";
+
 
     div.innerHTML = `
       <strong>
-        ${escapeHtml(invite.from)} wants to squad up with you.
+        ${escapeHtml(invite.from)}
+        wants to squad up with you.
       </strong>
 
       <span>
@@ -758,16 +925,27 @@ async function loadInvites(username) {
       </div>
     `;
 
+
     container.appendChild(div);
 
   });
 }
 
 
+/* =========================
+   ACCEPT / REJECT INVITE
+========================= */
+
 async function respondToInvite(inviteId, newStatus) {
 
   const username =
     document.getElementById("username").value.trim();
+
+
+  if (!username) {
+    return;
+  }
+
 
   const { data: invite, error: inviteError } =
     await db
@@ -776,15 +954,22 @@ async function respondToInvite(inviteId, newStatus) {
       .eq("id", inviteId)
       .single();
 
+
   if (inviteError) {
 
     console.error(inviteError);
 
     document.getElementById("status").textContent =
-      "Could not load invitation: " + inviteError.message;
+      "Could not load invitation: " +
+      inviteError.message;
 
     return;
   }
+
+
+  /*
+    Actualitzem la invitació.
+  */
 
   const { error: updateError } =
     await db
@@ -794,47 +979,93 @@ async function respondToInvite(inviteId, newStatus) {
       })
       .eq("id", inviteId);
 
+
   if (updateError) {
 
     console.error(updateError);
 
     document.getElementById("status").textContent =
-      "Could not update invitation: " + updateError.message;
+      "Could not update invitation: " +
+      updateError.message;
 
     return;
   }
 
+
+  /*
+    Si acceptem:
+    crear squad entre els dos jugadors.
+  */
+
   if (newStatus === "accepted") {
 
-    const { error: squadError } =
+
+    /*
+      Abans de crear-lo, comprovem
+      que no existeixi ja.
+    */
+
+    const { data: existingSquad, error: squadCheckError } =
       await db
         .from("squads")
-        .insert({
-          player1: invite.from,
-          player2: username
-        });
+        .select("*")
+        .or(
+          `and(player1.eq.${invite.from},player2.eq.${username}),and(player1.eq.${username},player2.eq.${invite.from})`
+        )
+        .maybeSingle();
 
-    if (squadError) {
 
-      console.error(squadError);
+    if (squadCheckError) {
+
+      console.error(squadCheckError);
 
       document.getElementById("status").textContent =
-        "Invitation accepted, but squad could not be created: " +
-        squadError.message;
+        "Could not check squad: " +
+        squadCheckError.message;
 
       return;
     }
+
+
+    if (!existingSquad) {
+
+      const { error: squadError } =
+        await db
+          .from("squads")
+          .insert({
+            player1: invite.from,
+            player2: username
+          });
+
+
+      if (squadError) {
+
+        console.error(squadError);
+
+        document.getElementById("status").textContent =
+          "Invitation accepted, but squad could not be created: " +
+          squadError.message;
+
+        return;
+      }
+    }
   }
+
 
   document.getElementById("status").textContent =
     newStatus === "accepted"
       ? "Invitation accepted! Squad created."
       : "Invitation rejected.";
 
+
   await loadInvites(username);
   await loadSquad(username);
 }
 
+
+/* =========================
+   LOAD SQUAD
+========================= */
 
 async function loadSquad(username) {
 
@@ -844,10 +1075,12 @@ async function loadSquad(username) {
   const container =
     document.getElementById("squadList");
 
+
   const { data, error } =
     await db
       .from("squads")
       .select("*");
+
 
   if (error) {
 
@@ -856,6 +1089,7 @@ async function loadSquad(username) {
     return;
   }
 
+
   const mySquads =
     (data || []).filter(
       squad =>
@@ -863,16 +1097,21 @@ async function loadSquad(username) {
         squad.player2 === username
     );
 
+
   if (mySquads.length === 0) {
 
     section.style.display = "none";
 
+    container.innerHTML = "";
+
     return;
   }
+
 
   section.style.display = "block";
 
   container.innerHTML = "";
+
 
   mySquads.forEach(squad => {
 
@@ -881,10 +1120,13 @@ async function loadSquad(username) {
         ? squad.player2
         : squad.player1;
 
+
     const div =
       document.createElement("div");
 
+
     div.className = "squad-member";
+
 
     div.innerHTML = `
       <strong>
@@ -896,18 +1138,24 @@ async function loadSquad(username) {
       </span>
     `;
 
+
     container.appendChild(div);
 
   });
 }
 
 
+/* =========================
+   ESCAPE HTML
+========================= */
+
 function escapeHtml(text) {
 
   const div =
     document.createElement("div");
 
-  div.textContent = text;
+  div.textContent =
+    text == null ? "" : String(text);
 
   return div.innerHTML;
 }
