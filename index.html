@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -741,7 +742,24 @@ async function respondToInvite(inviteId, newStatus) {
   const username =
     document.getElementById("username").value.trim();
 
-  const { error } =
+  const { data: invite, error: inviteError } =
+    await db
+      .from("invites")
+      .select("*")
+      .eq("id", inviteId)
+      .single();
+
+  if (inviteError) {
+
+    console.error(inviteError);
+
+    document.getElementById("status").textContent =
+      "Could not load invitation: " + inviteError.message;
+
+    return;
+  }
+
+  const { error: updateError } =
     await db
       .from("invites")
       .update({
@@ -749,19 +767,41 @@ async function respondToInvite(inviteId, newStatus) {
       })
       .eq("id", inviteId);
 
-  if (error) {
+  if (updateError) {
 
-    console.error(error);
+    console.error(updateError);
 
     document.getElementById("status").textContent =
-      "Could not update invitation: " + error.message;
+      "Could not update invitation: " + updateError.message;
 
     return;
   }
 
+  if (newStatus === "accepted") {
+
+    const { error: squadError } =
+      await db
+        .from("squads")
+        .insert({
+          player1: invite.from,
+          player2: username
+        });
+
+    if (squadError) {
+
+      console.error(squadError);
+
+      document.getElementById("status").textContent =
+        "Invitation accepted, but squad could not be created: " +
+        squadError.message;
+
+      return;
+    }
+  }
+
   document.getElementById("status").textContent =
     newStatus === "accepted"
-      ? "Invitation accepted!"
+      ? "Invitation accepted! Squad created."
       : "Invitation rejected.";
 
   await loadInvites(username);
@@ -782,3 +822,4 @@ function escapeHtml(text) {
 
 </body>
 </html>
+```
