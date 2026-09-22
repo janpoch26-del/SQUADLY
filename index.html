@@ -1,0 +1,645 @@
+<!doctype html>
+<html lang="ca">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SQUADLY — Find your squad</title>
+
+<style>
+:root{
+  --bg:#090b0f;
+  --panel:#11151b;
+  --panel2:#171c23;
+  --text:#f4f6f8;
+  --muted:#9aa5b1;
+  --line:#29323c;
+  --accent:#d9ff3f;
+  --accent2:#bce02d;
+}
+
+*{box-sizing:border-box}
+
+body{
+  margin:0;
+  background:
+    radial-gradient(circle at top right,#1d2710 0,transparent 30%),
+    linear-gradient(135deg,#090b0f,#10151b);
+  color:var(--text);
+  font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+}
+
+header{
+  max-width:1100px;
+  margin:auto;
+  padding:28px 20px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+.logo{
+  font-size:25px;
+  font-weight:900;
+  letter-spacing:2px;
+}
+
+.logo span{color:var(--accent)}
+
+.badge{
+  background:var(--accent);
+  color:#10130b;
+  font-size:11px;
+  font-weight:900;
+  padding:6px 9px;
+  border-radius:20px;
+}
+
+main{
+  max-width:1100px;
+  margin:auto;
+  padding:10px 20px 60px;
+}
+
+.hero{
+  padding:45px 0 35px;
+  max-width:750px;
+}
+
+.hero h1{
+  margin:0 0 18px;
+  font-size:clamp(42px,7vw,72px);
+  line-height:.95;
+  letter-spacing:-4px;
+}
+
+.hero p{
+  color:var(--muted);
+  font-size:18px;
+  max-width:650px;
+}
+
+.layout{
+  display:grid;
+  grid-template-columns:330px 1fr;
+  gap:18px;
+}
+
+.panel{
+  background:rgba(17,21,27,.96);
+  border:1px solid var(--line);
+  border-radius:18px;
+  padding:20px;
+}
+
+h2{
+  margin:0 0 18px;
+  font-size:18px;
+}
+
+label.title{
+  display:block;
+  margin:15px 0 7px;
+  color:var(--muted);
+  font-size:11px;
+  text-transform:uppercase;
+  letter-spacing:.8px;
+}
+
+select{
+  width:100%;
+  background:var(--panel2);
+  color:var(--text);
+  border:1px solid var(--line);
+  border-radius:10px;
+  padding:11px;
+  font:inherit;
+}
+
+.checks{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+}
+
+.check{
+  background:var(--panel2);
+  border-radius:9px;
+  padding:9px;
+  font-size:13px;
+  cursor:pointer;
+}
+
+.check input{
+  margin-right:6px;
+}
+
+.primary{
+  width:100%;
+  margin-top:18px;
+  padding:13px;
+  border:0;
+  border-radius:11px;
+  background:var(--accent);
+  color:#10130b;
+  font-weight:900;
+  cursor:pointer;
+}
+
+.primary:hover{
+  background:var(--accent2);
+}
+
+.results-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:14px;
+}
+
+.count{
+  color:var(--muted);
+  font-size:12px;
+}
+
+.cards{
+  display:grid;
+  gap:10px;
+}
+
+.card{
+  background:var(--panel2);
+  border:1px solid var(--line);
+  border-radius:14px;
+  padding:15px;
+}
+
+.row{
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+}
+
+.name{
+  font-size:17px;
+  font-weight:800;
+}
+
+.meta{
+  color:var(--muted);
+  font-size:13px;
+  margin-top:4px;
+}
+
+.score{
+  background:var(--accent);
+  color:#111;
+  font-size:12px;
+  font-weight:900;
+  padding:5px 8px;
+  border-radius:8px;
+  height:max-content;
+}
+
+.tags{
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
+  margin-top:11px;
+}
+
+.tag{
+  border:1px solid #35404a;
+  color:#cbd2d8;
+  border-radius:20px;
+  padding:4px 7px;
+  font-size:11px;
+}
+
+.invite{
+  width:100%;
+  margin-top:12px;
+  padding:11px;
+  border:0;
+  border-radius:10px;
+  background:#252d35;
+  color:white;
+  font-weight:800;
+  cursor:pointer;
+}
+
+.invite:hover{
+  background:#343f49;
+}
+
+.notice{
+  display:none;
+  margin-top:12px;
+  padding:11px;
+  border:1px solid #566d24;
+  background:#1d2711;
+  border-radius:10px;
+  color:#eaffbd;
+  font-size:13px;
+}
+
+footer{
+  max-width:1100px;
+  margin:auto;
+  padding:0 20px 35px;
+  color:#68737e;
+  font-size:12px;
+}
+
+@media(max-width:800px){
+  .layout{
+    grid-template-columns:1fr;
+  }
+
+  .hero{
+    padding-top:20px;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <div class="logo">SQUAD<span>LY</span></div>
+  <div class="badge">BETA · BF6</div>
+</header>
+
+<main>
+
+<section class="hero">
+  <h1>Find your squad.<br>Keep your squad.</h1>
+
+  <p>
+    Troba jugadors de Battlefield 6 compatibles amb tu
+    segons estil de joc, horari, plataforma i comunicació.
+  </p>
+</section>
+
+<div class="layout">
+
+<section class="panel">
+
+<h2>Your profile</h2>
+
+<label class="title">Platform</label>
+<select id="platform">
+  <option>PC</option>
+  <option>PS5</option>
+  <option>Xbox</option>
+</select>
+
+<label class="title">Playstyle</label>
+<select id="style">
+  <option>Objective</option>
+  <option>Casual</option>
+  <option>Competitive</option>
+  <option>K/D-focused</option>
+</select>
+
+<label class="title">Voice chat</label>
+<select id="mic">
+  <option>Yes</option>
+  <option>No</option>
+</select>
+
+<label class="title">Region</label>
+<select id="region">
+  <option>EU</option>
+  <option>NA</option>
+</select>
+
+<label class="title">Typical session</label>
+<select id="time">
+  <option>18:00–21:00</option>
+  <option>20:00–23:00</option>
+  <option>21:00–00:00</option>
+  <option>16:00–20:00</option>
+</select>
+
+<label class="title">What matters to you?</label>
+
+<div class="checks">
+
+<label class="check">
+<input type="checkbox" value="non-toxic" checked>
+Non-toxic
+</label>
+
+<label class="check">
+<input type="checkbox" value="communicates" checked>
+Communicates
+</label>
+
+<label class="check">
+<input type="checkbox" value="objectives" checked>
+Objectives
+</label>
+
+<label class="check">
+<input type="checkbox" value="revives">
+Revives
+</label>
+
+</div>
+
+<button class="primary" onclick="findMatches()">
+FIND MY SQUAD
+</button>
+
+<div id="notice" class="notice"></div>
+
+</section>
+
+
+<section class="panel">
+
+<div class="results-head">
+
+<h2>Compatible players</h2>
+
+<div class="count" id="count">
+Demo pool: 12 players
+</div>
+
+</div>
+
+<div id="cards" class="cards"></div>
+
+</section>
+
+</div>
+
+</main>
+
+<footer>
+SQUADLY MVP · Prototype · Battlefield 6
+</footer>
+
+
+<script>
+
+const players = [
+
+{
+name:"Alex",
+platform:"PC",
+style:"Objective",
+mic:"Yes",
+region:"EU",
+time:"20:00–23:00",
+traits:["non-toxic","communicates","objectives","revives"]
+},
+
+{
+name:"Mika",
+platform:"PS5",
+style:"Objective",
+mic:"Yes",
+region:"EU",
+time:"21:00–00:00",
+traits:["non-toxic","communicates","objectives"]
+},
+
+{
+name:"Jordan",
+platform:"PC",
+style:"Competitive",
+mic:"Yes",
+region:"EU",
+time:"20:00–23:00",
+traits:["communicates","objectives","revives"]
+},
+
+{
+name:"Sam",
+platform:"Xbox",
+style:"Casual",
+mic:"No",
+region:"EU",
+time:"18:00–21:00",
+traits:["non-toxic","objectives"]
+},
+
+{
+name:"Nico",
+platform:"PC",
+style:"K/D-focused",
+mic:"Yes",
+region:"EU",
+time:"21:00–00:00",
+traits:["communicates","non-toxic"]
+},
+
+{
+name:"Taylor",
+platform:"PS5",
+style:"Objective",
+mic:"Yes",
+region:"EU",
+time:"18:00–21:00",
+traits:["non-toxic","objectives","revives"]
+},
+
+{
+name:"Chris",
+platform:"PC",
+style:"Casual",
+mic:"Yes",
+region:"NA",
+time:"20:00–23:00",
+traits:["non-toxic","communicates"]
+},
+
+{
+name:"Leo",
+platform:"Xbox",
+style:"Objective",
+mic:"Yes",
+region:"EU",
+time:"20:00–23:00",
+traits:["non-toxic","communicates","objectives","revives"]
+},
+
+{
+name:"Max",
+platform:"PC",
+style:"Competitive",
+mic:"Yes",
+region:"EU",
+time:"21:00–00:00",
+traits:["communicates","objectives"]
+},
+
+{
+name:"Jamie",
+platform:"PS5",
+style:"Casual",
+mic:"No",
+region:"EU",
+time:"16:00–20:00",
+traits:["non-toxic"]
+},
+
+{
+name:"Dani",
+platform:"PC",
+style:"Objective",
+mic:"Yes",
+region:"EU",
+time:"18:00–21:00",
+traits:["non-toxic","communicates","objectives"]
+},
+
+{
+name:"Robin",
+platform:"Xbox",
+style:"Objective",
+mic:"Yes",
+region:"EU",
+time:"21:00–00:00",
+traits:["non-toxic","communicates","revives"]
+}
+
+];
+
+
+function calculateScore(player,user){
+
+let score = 0;
+
+if(player.region === user.region)
+score += 25;
+
+if(player.platform === user.platform)
+score += 15;
+
+if(player.style === user.style)
+score += 25;
+
+if(player.mic === user.mic)
+score += 10;
+
+if(player.time === user.time)
+score += 15;
+
+user.traits.forEach(trait => {
+
+if(player.traits.includes(trait))
+score += 3;
+
+});
+
+return Math.min(99,Math.round(score));
+
+}
+
+
+function findMatches(){
+
+const user = {
+
+platform:document.getElementById("platform").value,
+
+style:document.getElementById("style").value,
+
+mic:document.getElementById("mic").value,
+
+region:document.getElementById("region").value,
+
+time:document.getElementById("time").value,
+
+traits:[
+...document.querySelectorAll(".checks input:checked")
+].map(input => input.value)
+
+};
+
+
+const results = players
+
+.map(player => ({
+...player,
+score:calculateScore(player,user)
+}))
+
+.sort((a,b) => b.score-a.score)
+
+.slice(0,5);
+
+
+document.getElementById("cards").innerHTML = results.map(player => `
+
+<article class="card">
+
+<div class="row">
+
+<div>
+
+<div class="name">
+${player.name}
+</div>
+
+<div class="meta">
+${player.platform} · ${player.region} · ${player.time}
+</div>
+
+</div>
+
+<div class="score">
+${player.score}% match
+</div>
+
+</div>
+
+<div class="tags">
+
+${player.traits.map(trait => `
+<span class="tag">${trait}</span>
+`).join("")}
+
+</div>
+
+<button
+class="invite"
+onclick="invite('${player.name}')">
+
+INVITE TO SQUAD
+
+</button>
+
+</article>
+
+`).join("");
+
+
+document.getElementById("count").textContent =
+`Showing ${results.length} best matches`;
+
+document.getElementById("notice").style.display="none";
+
+}
+
+
+function invite(name){
+
+const notice = document.getElementById("notice");
+
+notice.textContent =
+`Invite sent to ${name}.`;
+
+notice.style.display="block";
+
+}
+
+
+findMatches();
+
+</script>
+
+</body>
+</html>
