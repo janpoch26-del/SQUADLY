@@ -526,6 +526,60 @@
   }
 
 
+  async function invitePlayer(username) {
+
+    const senderUsername =
+      document.getElementById("username").value.trim();
+
+    const status =
+      document.getElementById("status");
+
+    if (!senderUsername) {
+      status.textContent =
+        "Create your profile first.";
+      return;
+    }
+
+    status.textContent =
+      "Sending invite to " + username + "...";
+
+    const { error } = await db
+      .from("invites")
+      .insert({
+        from: senderUsername,
+        to: username,
+        status: "pending"
+      });
+
+    if (error) {
+      console.error(error);
+
+      status.textContent =
+        "Could not send invite: " + error.message;
+
+      return;
+    }
+
+    status.textContent =
+      "Invite sent to " + username + "!";
+  }
+
+
+  function escapeHtml(text) {
+
+    const div =
+      document.createElement("div");
+
+    div.textContent = text;
+
+    return div.innerHTML;
+  }
+
+</script>
+
+</body>
+</html>
+
   async function invitePlayer(username) {    const senderUsername =     document.getElementById("username").value.trim();    const status =     document.getElementById("status");    if (!senderUsername) {     status.textContent =       "Create your profile first.";     return;   }    status.textContent =     "Sending invite to " + username + "...";    const { error } = await db     .from("invites")     .insert({       from: senderUsername,       to: username,       status: "pending"     });    if (error) {     console.error(error);      status.textContent =       "Could not send invite: " + error.message;      return;   }    status.textContent =     "Invite sent to " + username + "!"; }
 
     const senderUsername =
