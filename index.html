@@ -525,11 +525,15 @@
   }
 
 
-  function invitePlayer(username) {
+ function invitePlayer(username) {
+  const status = document.getElementById("status");
 
-    document.getElementById("status").textContent =
-      "Invite sent to " + username + ".";
-  }
+  status.textContent = "Sending invite to " + username + "...";
+
+  setTimeout(() => {
+    status.textContent = "Invite sent to " + username + "!";
+  }, 800);
+}
 
 
   function escapeHtml(text) {
