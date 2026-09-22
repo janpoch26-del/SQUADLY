@@ -220,6 +220,24 @@
       border: 1px solid #444;
     }
 
+    .squad-member {
+      border: 1px solid #292929;
+      background: #0b0b0b;
+      border-radius: 10px;
+      padding: 17px;
+    }
+
+    .squad-member strong {
+      display: block;
+      font-size: 18px;
+      margin-bottom: 6px;
+    }
+
+    .squad-member span {
+      color: #888;
+      font-size: 12px;
+    }
+
     footer {
       text-align: center;
       color: #555;
@@ -380,6 +398,14 @@
 
   </section>
 
+  <section class="card" id="squadSection" style="display:none;">
+
+    <h2>Your Squad</h2>
+
+    <div id="squadList"></div>
+
+  </section>
+
 </main>
 
 <footer>
@@ -453,6 +479,7 @@ async function saveProfile() {
 
   await findMatches(profile);
   await loadInvites(username);
+  await loadSquad(username);
 }
 
 
@@ -805,6 +832,73 @@ async function respondToInvite(inviteId, newStatus) {
       : "Invitation rejected.";
 
   await loadInvites(username);
+  await loadSquad(username);
+}
+
+
+async function loadSquad(username) {
+
+  const section =
+    document.getElementById("squadSection");
+
+  const container =
+    document.getElementById("squadList");
+
+  const { data, error } =
+    await db
+      .from("squads")
+      .select("*");
+
+  if (error) {
+
+    console.error(error);
+
+    return;
+  }
+
+  const mySquads =
+    (data || []).filter(
+      squad =>
+        squad.player1 === username ||
+        squad.player2 === username
+    );
+
+  if (mySquads.length === 0) {
+
+    section.style.display = "none";
+
+    return;
+  }
+
+  section.style.display = "block";
+
+  container.innerHTML = "";
+
+  mySquads.forEach(squad => {
+
+    const otherPlayer =
+      squad.player1 === username
+        ? squad.player2
+        : squad.player1;
+
+    const div =
+      document.createElement("div");
+
+    div.className = "squad-member";
+
+    div.innerHTML = `
+      <strong>
+        ${escapeHtml(otherPlayer)}
+      </strong>
+
+      <span>
+        Squad member
+      </span>
+    `;
+
+    container.appendChild(div);
+
+  });
 }
 
 
