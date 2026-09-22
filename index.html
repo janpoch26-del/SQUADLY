@@ -547,7 +547,7 @@
       .from("invites")
       .insert({
         sender_username: senderUsername,
-        receiver_username: username,
+        .from("invites") .insert({   from: senderUsername,   to: username,   status: "pending" });: username,
         status: "pending"
       });
 
