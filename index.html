@@ -367,10 +367,13 @@
       const profile = getProfile();
 
       if (!profile.username) {
+
         document.getElementById("profileMessage").textContent =
           "Please enter a username.";
+
         return;
       }
+
 
       const {
         data: existing,
@@ -381,7 +384,9 @@
         .eq("username", profile.username)
         .maybeSingle();
 
+
       if (findError) {
+
         console.error(findError);
 
         document.getElementById("profileMessage").textContent =
@@ -390,25 +395,30 @@
         return;
       }
 
+
       let error;
+
 
       if (existing) {
 
-        const result = await db
-          .from("profiles")
-          .update(profile)
-          .eq("id", existing.id);
+        const result =
+          await db
+            .from("profiles")
+            .update(profile)
+            .eq("id", existing.id);
 
         error = result.error;
 
       } else {
 
-        const result = await db
-          .from("profiles")
-          .insert([profile]);
+        const result =
+          await db
+            .from("profiles")
+            .insert([profile]);
 
         error = result.error;
       }
+
 
       if (error) {
 
@@ -420,10 +430,13 @@
         return;
       }
 
+
       myProfile = profile;
+
 
       document.getElementById("profileMessage").textContent =
         "Profile saved.";
+
 
       await loadMatches();
       await loadInvites();
@@ -447,6 +460,47 @@
       Game:      filter only
     */
 
+
+    function sameMic(a, b) {
+
+      const normalizeMic = value => {
+
+        if (
+          value === true ||
+          value === "true" ||
+          value === "Yes" ||
+          value === "yes"
+        ) {
+          return "yes";
+        }
+
+        if (
+          value === false ||
+          value === "false" ||
+          value === "No" ||
+          value === "no"
+        ) {
+          return "no";
+        }
+
+        return String(value || "")
+          .trim()
+          .toLowerCase();
+      };
+
+
+      return normalizeMic(a) === normalizeMic(b);
+    }
+
+
+    function normalizeGame(value) {
+
+      return String(value || "")
+        .trim()
+        .toLowerCase();
+    }
+
+
     function calculateMatch(player) {
 
       let score = 0;
@@ -454,7 +508,10 @@
       const reasons = [];
 
 
-      if (player.playstyle === myProfile.playstyle) {
+      if (
+        player.playstyle ===
+        myProfile.playstyle
+      ) {
 
         score += 30;
 
@@ -462,7 +519,10 @@
       }
 
 
-      if (player.session_time === myProfile.session_time) {
+      if (
+        player.session_time ===
+        myProfile.session_time
+      ) {
 
         score += 25;
 
@@ -470,7 +530,10 @@
       }
 
 
-      if (player.region === myProfile.region) {
+      if (
+        player.region ===
+        myProfile.region
+      ) {
 
         score += 20;
 
@@ -478,7 +541,10 @@
       }
 
 
-      if (player.platform === myProfile.platform) {
+      if (
+        player.platform ===
+        myProfile.platform
+      ) {
 
         score += 15;
 
@@ -486,17 +552,26 @@
       }
 
 
-      if (player.mic === myProfile.mic) {
+      if (
+        sameMic(
+          player.mic,
+          myProfile.mic
+        )
+      ) {
 
         score += 10;
 
-        reasons.push("Same voice chat preference");
+        reasons.push(
+          "Same voice chat preference"
+        );
       }
 
 
       const sharedTraits =
-        (player.traits || []).filter(trait =>
-          (myProfile.traits || []).includes(trait)
+        (player.traits || []).filter(
+          trait =>
+            (myProfile.traits || [])
+              .includes(trait)
         );
 
 
@@ -531,14 +606,25 @@
       }
 
 
+      /*
+        We intentionally load all profiles first
+        and filter the game in JavaScript.
+
+        This avoids relying on a database-side
+        game filter and also lets us normalize
+        spaces/capitalization safely.
+      */
+
       const {
         data,
         error
       } = await db
         .from("profiles")
         .select("*")
-        .eq("game", myProfile.game)
-        .neq("username", myProfile.username);
+        .neq(
+          "username",
+          myProfile.username
+        );
 
 
       if (error) {
@@ -555,27 +641,56 @@
       if (!data || data.length === 0) {
 
         container.innerHTML =
+          '<div class="message">No players found yet.</div>';
+
+        return;
+      }
+
+
+      const myGame =
+        normalizeGame(myProfile.game);
+
+
+      const compatiblePlayers =
+        data.filter(player => {
+
+          const playerGame =
+            normalizeGame(player.game);
+
+          return (
+            playerGame === myGame
+          );
+        });
+
+
+      if (
+        compatiblePlayers.length === 0
+      ) {
+
+        container.innerHTML =
           '<div class="message">No players found for this game yet.</div>';
 
         return;
       }
 
 
-      const matches = data
-        .map(player => {
+      const matches =
+        compatiblePlayers
+          .map(player => {
 
-          const result =
-            calculateMatch(player);
+            const result =
+              calculateMatch(player);
 
-          return {
-            ...player,
-            ...result
-          };
+            return {
+              ...player,
+              ...result
+            };
 
-        })
-        .sort(
-          (a, b) => b.score - a.score
-        );
+          })
+          .sort(
+            (a, b) =>
+              b.score - a.score
+          );
 
 
       container.innerHTML = "";
@@ -584,9 +699,13 @@
       matches.forEach(player => {
 
         const div =
-          document.createElement("div");
+          document.createElement(
+            "div"
+          );
 
-        div.className = "player";
+
+        div.className =
+          "player";
 
 
         div.innerHTML = `
@@ -604,11 +723,17 @@
           </div>
 
           <div class="meta">
+
             ${player.game}
+
             ·
+
             ${player.platform}
+
             ·
+
             ${player.playstyle}
+
           </div>
 
           <div class="reasons">
@@ -636,27 +761,45 @@
 
 
         const button =
-          div.querySelector(".invite-btn");
+          div.querySelector(
+            ".invite-btn"
+          );
 
 
         button.addEventListener(
           "click",
-          () => sendInvite(player.username)
+          () => {
+
+            sendInvite(
+              player.username
+            );
+
+          }
         );
 
 
-        container.appendChild(div);
+        container.appendChild(
+          div
+        );
 
       });
 
     }
 
 
-    async function sendInvite(username) {
+    async function sendInvite(
+      username
+    ) {
 
-      if (!myProfile) return;
+      if (!myProfile) {
+        return;
+      }
 
-      if (username === myProfile.username) {
+
+      if (
+        username ===
+        myProfile.username
+      ) {
         return;
       }
 
@@ -667,9 +810,18 @@
       } = await db
         .from("invites")
         .select("*")
-        .eq("from", myProfile.username)
-        .eq("to", username)
-        .eq("status", "pending")
+        .eq(
+          "from",
+          myProfile.username
+        )
+        .eq(
+          "to",
+          username
+        )
+        .eq(
+          "status",
+          "pending"
+        )
         .maybeSingle();
 
 
@@ -683,40 +835,56 @@
 
       if (existing) {
 
-        alert("Invitation already sent.");
+        alert(
+          "Invitation already sent."
+        );
 
         return;
       }
 
 
-      const { error } =
-        await db
-          .from("invites")
-          .insert([{
-            from: myProfile.username,
-            to: username,
-            status: "pending"
-          }]);
+      const {
+        error
+      } = await db
+        .from("invites")
+        .insert([{
+
+          from:
+            myProfile.username,
+
+          to:
+            username,
+
+          status:
+            "pending"
+
+        }]);
 
 
       if (error) {
 
         console.error(error);
 
-        alert("Error sending invitation.");
+        alert(
+          "Error sending invitation."
+        );
 
         return;
       }
 
 
-      alert("Invitation sent.");
+      alert(
+        "Invitation sent."
+      );
     }
 
 
     async function loadInvites() {
 
       const container =
-        document.getElementById("invites");
+        document.getElementById(
+          "invites"
+        );
 
 
       if (!myProfile) {
@@ -734,11 +902,20 @@
       } = await db
         .from("invites")
         .select("*")
-        .eq("to", myProfile.username)
-        .eq("status", "pending")
-        .order("created_at", {
-          ascending: false
-        });
+        .eq(
+          "to",
+          myProfile.username
+        )
+        .eq(
+          "status",
+          "pending"
+        )
+        .order(
+          "created_at",
+          {
+            ascending: false
+          }
+        );
 
 
       if (error) {
@@ -752,7 +929,10 @@
       }
 
 
-      if (!data || data.length === 0) {
+      if (
+        !data ||
+        data.length === 0
+      ) {
 
         container.innerHTML =
           '<div class="message">No pending invitations.</div>';
@@ -767,9 +947,13 @@
       data.forEach(invite => {
 
         const div =
-          document.createElement("div");
+          document.createElement(
+            "div"
+          );
 
-        div.className = "invite";
+
+        div.className =
+          "invite";
 
 
         div.innerHTML = `
@@ -796,28 +980,42 @@
 
 
         div
-          .querySelector(".accept")
+          .querySelector(
+            ".accept"
+          )
           .addEventListener(
             "click",
-            () => respondToInvite(
-              invite.id,
-              "accepted"
-            )
+            () => {
+
+              respondToInvite(
+                invite.id,
+                "accepted"
+              );
+
+            }
           );
 
 
         div
-          .querySelector(".reject")
+          .querySelector(
+            ".reject"
+          )
           .addEventListener(
             "click",
-            () => respondToInvite(
-              invite.id,
-              "rejected"
-            )
+            () => {
+
+              respondToInvite(
+                invite.id,
+                "rejected"
+              );
+
+            }
           );
 
 
-        container.appendChild(div);
+        container.appendChild(
+          div
+        );
 
       });
 
@@ -835,13 +1033,21 @@
       } = await db
         .from("invites")
         .select("*")
-        .eq("id", id)
+        .eq(
+          "id",
+          id
+        )
         .maybeSingle();
 
 
-      if (inviteError || !invite) {
+      if (
+        inviteError ||
+        !invite
+      ) {
 
-        console.error(inviteError);
+        console.error(
+          inviteError
+        );
 
         return;
       }
@@ -854,18 +1060,25 @@
         .update({
           status
         })
-        .eq("id", id);
+        .eq(
+          "id",
+          id
+        );
 
 
       if (updateError) {
 
-        console.error(updateError);
+        console.error(
+          updateError
+        );
 
         return;
       }
 
 
-      if (status === "accepted") {
+      if (
+        status === "accepted"
+      ) {
 
         const {
           data: existingSquads,
@@ -880,7 +1093,9 @@
 
         if (squadError) {
 
-          console.error(squadError);
+          console.error(
+            squadError
+          );
 
         } else if (
           !existingSquads ||
@@ -892,27 +1107,41 @@
           } = await db
             .from("squads")
             .insert([{
-              player1: invite.from,
-              player2: invite.to
+
+              player1:
+                invite.from,
+
+              player2:
+                invite.to
+
             }]);
 
 
           if (error) {
-            console.error(error);
+
+            console.error(
+              error
+            );
           }
         }
       }
 
 
       await loadInvites();
-      await loadSquad(myProfile.username);
+      await loadSquad(
+        myProfile.username
+      );
     }
 
 
-    async function loadSquad(username) {
+    async function loadSquad(
+      username
+    ) {
 
       const container =
-        document.getElementById("squad");
+        document.getElementById(
+          "squad"
+        );
 
 
       if (!username) {
@@ -944,13 +1173,16 @@
 
 
       const squad =
-        (data || []).filter(item =>
-          item.player1 === username ||
-          item.player2 === username
+        (data || []).filter(
+          item =>
+            item.player1 === username ||
+            item.player2 === username
         );
 
 
-      if (squad.length === 0) {
+      if (
+        squad.length === 0
+      ) {
 
         container.innerHTML =
           '<div class="message">You are not in a squad yet.</div>';
@@ -971,9 +1203,13 @@
 
 
         const div =
-          document.createElement("div");
+          document.createElement(
+            "div"
+          );
 
-        div.className = "player";
+
+        div.className =
+          "player";
 
 
         div.innerHTML = `
@@ -989,7 +1225,9 @@
         `;
 
 
-        container.appendChild(div);
+        container.appendChild(
+          div
+        );
 
       });
 
@@ -997,7 +1235,9 @@
 
 
     document
-      .getElementById("saveProfile")
+      .getElementById(
+        "saveProfile"
+      )
       .addEventListener(
         "click",
         saveProfile
