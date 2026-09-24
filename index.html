@@ -3,7 +3,6 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="squadly-version" content="2026-09-24-score100" />
   <title>SQUADLY</title>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -220,8 +219,6 @@
       Find players who actually fit your playstyle.
     </div>
 
-    <!-- PROFILE -->
-
     <div class="card">
       <h2>Your profile</h2>
 
@@ -309,37 +306,26 @@
       <div id="profileMessage" class="message"></div>
     </div>
 
-
-    <!-- MATCHES -->
-
     <div class="card">
       <h2>Matches</h2>
       <div id="matches"></div>
     </div>
-
-
-    <!-- INVITATIONS -->
 
     <div class="card">
       <h2>Invitations</h2>
       <div id="invites"></div>
     </div>
 
-
-    <!-- SQUAD -->
-
     <div class="card">
       <h2>Your Squad</h2>
       <div id="squad"></div>
     </div>
-
 
     <footer>
       SQUADLY · Multiplayer matchmaking prototype
     </footer>
 
   </div>
-
 
   <script>
 
@@ -354,40 +340,7 @@
       SUPABASE_PUBLISHABLE_KEY
     );
 
-
     let myProfile = null;
-
-
-    /*
-      ========================================
-      SQUADLY MATCHMAKING v2
-      MAX SCORE = 100
-      ========================================
-
-      Playstyle  = 30
-      Session    = 25
-      Region     = 20
-      Platform   = 15
-      Mic        = 10
-
-      TOTAL      = 100
-
-      Username is NEVER part of the score.
-      Game is used as a filter, not as points.
-      Traits are used only as explanations.
-    */
-
-
-    function cleanValue(value) {
-
-      if (value === null || value === undefined) {
-        return "";
-      }
-
-      return String(value)
-        .trim()
-        .toLowerCase();
-    }
 
 
     function getProfile() {
@@ -396,32 +349,15 @@
         document.querySelectorAll(".trait input:checked")
       ).map(input => input.value);
 
-
       return {
-
-        game:
-          document.getElementById("game").value,
-
-        username:
-          document.getElementById("username").value.trim(),
-
-        platform:
-          document.getElementById("platform").value,
-
-        playstyle:
-          document.getElementById("playstyle").value,
-
-        mic:
-          document.getElementById("mic").value,
-
-        region:
-          document.getElementById("region").value,
-
-        session_time:
-          document.getElementById("session_time").value,
-
+        game: document.getElementById("game").value,
+        username: document.getElementById("username").value.trim(),
+        platform: document.getElementById("platform").value,
+        playstyle: document.getElementById("playstyle").value,
+        mic: document.getElementById("mic").value,
+        region: document.getElementById("region").value,
+        session_time: document.getElementById("session_time").value,
         traits
-
       };
     }
 
@@ -430,32 +366,22 @@
 
       const profile = getProfile();
 
-
       if (!profile.username) {
-
         document.getElementById("profileMessage").textContent =
           "Please enter a username.";
-
         return;
       }
-
 
       const {
         data: existing,
         error: findError
       } = await db
-
         .from("profiles")
-
         .select("*")
-
         .eq("username", profile.username)
-
         .maybeSingle();
 
-
       if (findError) {
-
         console.error(findError);
 
         document.getElementById("profileMessage").textContent =
@@ -464,18 +390,13 @@
         return;
       }
 
-
       let error;
-
 
       if (existing) {
 
         const result = await db
-
           .from("profiles")
-
           .update(profile)
-
           .eq("id", existing.id);
 
         error = result.error;
@@ -483,14 +404,11 @@
       } else {
 
         const result = await db
-
           .from("profiles")
-
           .insert([profile]);
 
         error = result.error;
       }
-
 
       if (error) {
 
@@ -502,27 +420,31 @@
         return;
       }
 
-
       myProfile = profile;
-
 
       document.getElementById("profileMessage").textContent =
         "Profile saved.";
 
-
       await loadMatches();
-
       await loadInvites();
-
       await loadSquad(profile.username);
-
     }
 
 
     /*
-      ========================================
-      MATCH CALCULATION
-      ========================================
+      MATCHMAKING
+
+      100 POINTS TOTAL
+
+      Playstyle: 30
+      Session:   25
+      Region:    20
+      Platform:  15
+      Voice:     10
+
+      Username:  0
+      Traits:    0
+      Game:      filter only
     */
 
     function calculateMatch(player) {
@@ -532,14 +454,7 @@
       const reasons = [];
 
 
-      /*
-        PLAYSTYLE = 30
-      */
-
-      if (
-        cleanValue(player.playstyle) ===
-        cleanValue(myProfile.playstyle)
-      ) {
+      if (player.playstyle === myProfile.playstyle) {
 
         score += 30;
 
@@ -547,14 +462,7 @@
       }
 
 
-      /*
-        SESSION = 25
-      */
-
-      if (
-        cleanValue(player.session_time) ===
-        cleanValue(myProfile.session_time)
-      ) {
+      if (player.session_time === myProfile.session_time) {
 
         score += 25;
 
@@ -562,14 +470,7 @@
       }
 
 
-      /*
-        REGION = 20
-      */
-
-      if (
-        cleanValue(player.region) ===
-        cleanValue(myProfile.region)
-      ) {
+      if (player.region === myProfile.region) {
 
         score += 20;
 
@@ -577,14 +478,7 @@
       }
 
 
-      /*
-        PLATFORM = 15
-      */
-
-      if (
-        cleanValue(player.platform) ===
-        cleanValue(myProfile.platform)
-      ) {
+      if (player.platform === myProfile.platform) {
 
         score += 15;
 
@@ -592,14 +486,7 @@
       }
 
 
-      /*
-        VOICE CHAT = 10
-      */
-
-      if (
-        cleanValue(player.mic) ===
-        cleanValue(myProfile.mic)
-      ) {
+      if (player.mic === myProfile.mic) {
 
         score += 10;
 
@@ -607,30 +494,9 @@
       }
 
 
-      /*
-        TRAITS
-
-        Traits DO NOT affect the percentage.
-        They are only used to explain compatibility.
-      */
-
-      const myTraits =
-        Array.isArray(myProfile.traits)
-          ? myProfile.traits
-          : [];
-
-
-      const playerTraits =
-        Array.isArray(player.traits)
-          ? player.traits
-          : [];
-
-
       const sharedTraits =
-        playerTraits.filter(trait =>
-          myTraits.some(myTrait =>
-            cleanValue(myTrait) === cleanValue(trait)
-          )
+        (player.traits || []).filter(trait =>
+          (myProfile.traits || []).includes(trait)
         );
 
 
@@ -643,31 +509,12 @@
       });
 
 
-      /*
-        HARD LIMIT
-
-        The score can NEVER exceed 100.
-      */
-
-      score = Math.min(100, score);
-
-
       return {
-
-        score,
-
+        score: Math.min(score, 100),
         reasons
-
       };
-
     }
 
-
-    /*
-      ========================================
-      LOAD MATCHES
-      ========================================
-    */
 
     async function loadMatches() {
 
@@ -688,13 +535,9 @@
         data,
         error
       } = await db
-
         .from("profiles")
-
         .select("*")
-
         .eq("game", myProfile.game)
-
         .neq("username", myProfile.username);
 
 
@@ -719,26 +562,19 @@
 
 
       const matches = data
-
         .map(player => {
 
           const result =
             calculateMatch(player);
 
-
           return {
-
             ...player,
-
             ...result
-
           };
 
         })
-
         .sort(
-          (a, b) =>
-            b.score - a.score
+          (a, b) => b.score - a.score
         );
 
 
@@ -750,9 +586,7 @@
         const div =
           document.createElement("div");
 
-
-        div.className =
-          "player";
+        div.className = "player";
 
 
         div.innerHTML = `
@@ -769,17 +603,13 @@
 
           </div>
 
-
           <div class="meta">
-
             ${player.game}
             ·
             ${player.platform}
             ·
             ${player.playstyle}
-
           </div>
-
 
           <div class="reasons">
 
@@ -794,7 +624,6 @@
             }
 
           </div>
-
 
           <button
             class="invite-btn"
@@ -812,9 +641,7 @@
 
         button.addEventListener(
           "click",
-          () => {
-            sendInvite(player.username);
-          }
+          () => sendInvite(player.username)
         );
 
 
@@ -825,24 +652,11 @@
     }
 
 
-    /*
-      ========================================
-      SEND INVITE
-      ========================================
-    */
-
     async function sendInvite(username) {
 
-      if (!myProfile) {
-        return;
-      }
+      if (!myProfile) return;
 
-
-      if (
-        username ===
-        myProfile.username
-      ) {
-
+      if (username === myProfile.username) {
         return;
       }
 
@@ -851,17 +665,11 @@
         data: existing,
         error: checkError
       } = await db
-
         .from("invites")
-
         .select("*")
-
         .eq("from", myProfile.username)
-
         .eq("to", username)
-
         .eq("status", "pending")
-
         .maybeSingle();
 
 
@@ -875,9 +683,7 @@
 
       if (existing) {
 
-        alert(
-          "Invitation already sent."
-        );
+        alert("Invitation already sent.");
 
         return;
       }
@@ -885,20 +691,11 @@
 
       const { error } =
         await db
-
           .from("invites")
-
           .insert([{
-
-            from:
-              myProfile.username,
-
-            to:
-              username,
-
-            status:
-              "pending"
-
+            from: myProfile.username,
+            to: username,
+            status: "pending"
           }]);
 
 
@@ -906,26 +703,15 @@
 
         console.error(error);
 
-        alert(
-          "Error sending invitation."
-        );
+        alert("Error sending invitation.");
 
         return;
       }
 
 
-      alert(
-        "Invitation sent."
-      );
-
+      alert("Invitation sent.");
     }
 
-
-    /*
-      ========================================
-      LOAD INVITES
-      ========================================
-    */
 
     async function loadInvites() {
 
@@ -946,21 +732,13 @@
         data,
         error
       } = await db
-
         .from("invites")
-
         .select("*")
-
         .eq("to", myProfile.username)
-
         .eq("status", "pending")
-
-        .order(
-          "created_at",
-          {
-            ascending: false
-          }
-        );
+        .order("created_at", {
+          ascending: false
+        });
 
 
       if (error) {
@@ -991,9 +769,7 @@
         const div =
           document.createElement("div");
 
-
-        div.className =
-          "invite";
+        div.className = "invite";
 
 
         div.innerHTML = `
@@ -1003,7 +779,6 @@
           </strong>
 
           wants to squad up with you.
-
 
           <div class="invite-actions">
 
@@ -1024,12 +799,10 @@
           .querySelector(".accept")
           .addEventListener(
             "click",
-            () => {
-              respondToInvite(
-                invite.id,
-                "accepted"
-              );
-            }
+            () => respondToInvite(
+              invite.id,
+              "accepted"
+            )
           );
 
 
@@ -1037,12 +810,10 @@
           .querySelector(".reject")
           .addEventListener(
             "click",
-            () => {
-              respondToInvite(
-                invite.id,
-                "rejected"
-              );
-            }
+            () => respondToInvite(
+              invite.id,
+              "rejected"
+            )
           );
 
 
@@ -1053,12 +824,6 @@
     }
 
 
-    /*
-      ========================================
-      ACCEPT / REJECT INVITE
-      ========================================
-    */
-
     async function respondToInvite(
       id,
       status
@@ -1068,24 +833,15 @@
         data: invite,
         error: inviteError
       } = await db
-
         .from("invites")
-
         .select("*")
-
         .eq("id", id)
-
         .maybeSingle();
 
 
-      if (
-        inviteError ||
-        !invite
-      ) {
+      if (inviteError || !invite) {
 
-        console.error(
-          inviteError
-        );
+        console.error(inviteError);
 
         return;
       }
@@ -1094,39 +850,29 @@
       const {
         error: updateError
       } = await db
-
         .from("invites")
-
         .update({
           status
         })
-
         .eq("id", id);
 
 
       if (updateError) {
 
-        console.error(
-          updateError
-        );
+        console.error(updateError);
 
         return;
       }
 
 
-      if (
-        status === "accepted"
-      ) {
+      if (status === "accepted") {
 
         const {
           data: existingSquads,
           error: squadError
         } = await db
-
           .from("squads")
-
           .select("*")
-
           .or(
             `and(player1.eq.${invite.from},player2.eq.${invite.to}),and(player1.eq.${invite.to},player2.eq.${invite.from})`
           );
@@ -1134,9 +880,7 @@
 
         if (squadError) {
 
-          console.error(
-            squadError
-          );
+          console.error(squadError);
 
         } else if (
           !existingSquads ||
@@ -1146,49 +890,26 @@
           const {
             error
           } = await db
-
             .from("squads")
-
             .insert([{
-
-              player1:
-                invite.from,
-
-              player2:
-                invite.to
-
+              player1: invite.from,
+              player2: invite.to
             }]);
 
 
           if (error) {
-
             console.error(error);
-
           }
-
         }
-
       }
 
 
       await loadInvites();
-
-      await loadSquad(
-        myProfile.username
-      );
-
+      await loadSquad(myProfile.username);
     }
 
 
-    /*
-      ========================================
-      LOAD SQUAD
-      ========================================
-    */
-
-    async function loadSquad(
-      username
-    ) {
+    async function loadSquad(username) {
 
       const container =
         document.getElementById("squad");
@@ -1207,9 +928,7 @@
         data,
         error
       } = await db
-
         .from("squads")
-
         .select("*");
 
 
@@ -1225,10 +944,9 @@
 
 
       const squad =
-        (data || []).filter(
-          item =>
-            item.player1 === username ||
-            item.player2 === username
+        (data || []).filter(item =>
+          item.player1 === username ||
+          item.player2 === username
         );
 
 
@@ -1255,9 +973,7 @@
         const div =
           document.createElement("div");
 
-
-        div.className =
-          "player";
+        div.className = "player";
 
 
         div.innerHTML = `
@@ -1279,12 +995,6 @@
 
     }
 
-
-    /*
-      ========================================
-      START
-      ========================================
-    */
 
     document
       .getElementById("saveProfile")
